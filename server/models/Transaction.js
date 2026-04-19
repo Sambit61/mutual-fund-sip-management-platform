@@ -1,36 +1,41 @@
 const mongoose = require("mongoose");
 
-const transactionSchema = new mongoose.Schema(
-{
+const transactionSchema = new mongoose.Schema({
+
   investor: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true
   },
+
   fund: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "MutualFund",
-    required: true
+    default: null
   },
-  amount: {
-    type: Number,
-    required: true
+
+  // 🔹 NEW (for stocks)
+  symbol: {
+    type: String,
+    default: null
   },
-  nav: {
-    type: Number,
-    required: true
-  },
-  units: {
-    type: Number,
-    required: true
-  },
+
+  amount: Number,
+  nav: Number,     // for funds OR stock price
+  units: Number,
+
   type: {
     type: String,
-    enum: ["BUY", "REDEEM"],
+    enum: ["BUY", "SELL"],
     default: "BUY"
+  },
+
+  assetType: {
+    type: String,
+    enum: ["FUND", "STOCK"],
+    required: true
   }
-},
-{ timestamps: true }
-);
+
+}, { timestamps: true });
 
 module.exports = mongoose.model("Transaction", transactionSchema);

@@ -10,9 +10,13 @@ exports.createFund = async (req, res) => {
 };
 
 exports.getFunds = async (req, res) => {
+  console.log("getFunds start");
   try {
+    console.log("getFunds before MutualFund.find");
     const funds = await MutualFund.find();
+    console.log("getFunds got from DB:", funds.length);
     res.json(funds);
+    console.log("getFunds sent response");
   } catch (error) {
     res.status(500).json({ message: "Error fetching funds" });
   }

@@ -1,35 +1,69 @@
 const Transaction = require("../models/Transaction");
 const MutualFund = require("../models/MutualFund");
-//buying funds 
-exports.buyFund = async (req, res) => {
+const axios = require("axios");
+
+
+// ================= BUY =================
+exports.buyAsset = async (req, res) => {
   try {
-    const { fundId, amount } = req.body;
 
-    const fund = await MutualFund.findById(fundId);
+    const { fundId, symbol, amount, assetType } = req.body;
 
-    if (!fund) {
-      return res.status(404).json({ message: "Fund not found" });
+    let price;
+
+    // 🔹 FUND
+    if (assetType === "FUND") {
+
+      const fund = await MutualFund.findById(fundId);
+
+      if (!fund) {
+        return res.status(404).json({ message: "Fund not found" });
+      }
+
+      price = fund.nav;
     }
 
-    const nav = fund.nav;
+    // 🔹 STOCK
+    if (assetType === "STOCK") {
 
-    const units = amount / nav;
+      const response = await axios.get(
+        `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${process.env.FINNHUB_API_KEY}`
+      );
+
+      price = response.data.c;
+
+      if (!price) {
+        return res.status(400).json({ message: "Invalid stock price" });
+      }
+    }
+
+    if (!price) {
+      return res.status(400).json({ message: "Invalid assetType" });
+    }
+
+    const units = amount / price;
 
     const transaction = await Transaction.create({
       investor: req.user._id,
-      fund: fundId,
+      fund: assetType === "FUND" ? fundId : null,
+      symbol: assetType === "STOCK" ? symbol : null,
       amount,
-      nav,
-      units
+      nav: price,
+      units,
+      assetType,
+      type: "BUY"
     });
 
-    res.status(201).json(transaction);
+    res.json(transaction);
 
-  } catch (error) {
-    res.status(500).json({ message: "Transaction failed" });
+  } catch (err) {
+    console.error("BUY ERROR:", err);
+    res.status(500).json({ message: "Investment failed" });
   }
 };
-//sell or exit funds 
+
+
+// ================= REDEEM =================
 exports.redeemFund = async (req, res) => {
   try {
 
@@ -50,73 +84,126 @@ exports.redeemFund = async (req, res) => {
       amount,
       nav,
       units: -units,
-      type: "REDEEM"
+      type: "SELL",
+      assetType: "FUND"
     });
 
     res.status(201).json(transaction);
 
   } catch (error) {
+    console.error("REDEEM ERROR:", error);
     res.status(500).json({ message: "Redeem failed" });
   }
 };
-//transaction history
+
+
+// ================= TRANSACTIONS =================
 exports.getMyTransactions = async (req, res) => {
   try {
     const transactions = await Transaction.find({ investor: req.user._id })
       .populate("fund", "fundName nav");
 
-    res.json(transactions);
+    // 🔹 prevent crash if fund is null
+    const safeTransactions = transactions.map(txn => ({
+      ...txn._doc,
+      fund: txn.fund || null
+    }));
+
+    res.json(safeTransactions);
+
   } catch (error) {
-    res.status(500).json({ message: "Error fetching transactions" });
+    console.error("TRANSACTION ERROR:", error);
+    res.status(500).json({ message: error.message });
   }
 };
-//portfolio function
+
+
+// ================= PORTFOLIO =================
 exports.getPortfolio = async (req, res) => {
   try {
-
     const transactions = await Transaction
       .find({ investor: req.user._id })
       .populate("fund");
 
     const portfolio = {};
 
-    transactions.forEach((txn) => {
+    for (let txn of transactions) {
 
-      const fundId = txn.fund._id.toString();
+      // 🔹 fallback for old data
+      if (!txn.assetType) txn.assetType = "FUND";
 
-      if (!portfolio[fundId]) {
-        portfolio[fundId] = {
-          fundName: txn.fund.fundName,
-          totalUnits: 0,
-          totalInvestment: 0,
-          nav: txn.fund.nav
-        };
+      // 🔹 FUND (safe check)
+      if (txn.assetType === "FUND" && txn.fund) {
+
+        const key = txn.fund._id.toString();
+
+        if (!portfolio[key]) {
+          portfolio[key] = {
+            name: txn.fund.fundName,
+            totalUnits: 0,
+            totalInvestment: 0,
+            nav: txn.fund.nav,
+            isStock: false
+          };
+        }
+
+        portfolio[key].totalUnits += txn.units;
+        portfolio[key].totalInvestment += txn.amount;
       }
 
-      portfolio[fundId].totalUnits += txn.units;
-      portfolio[fundId].totalInvestment += txn.amount;
+      // 🔹 STOCK
+      if (txn.assetType === "STOCK" && txn.symbol) {
 
-    });
+        const key = txn.symbol;
 
-    const result = Object.values(portfolio).map((fund) => {
+        if (!portfolio[key]) {
+          portfolio[key] = {
+            name: txn.symbol,
+            totalUnits: 0,
+            totalInvestment: 0,
+            isStock: true
+          };
+        }
 
-      const currentValue = fund.totalUnits * fund.nav;
+        portfolio[key].totalUnits += txn.units;
+        portfolio[key].totalInvestment += txn.amount;
+      }
+    }
 
-      const profitLoss = currentValue - fund.totalInvestment;
+    // 🔹 Calculate values
+    for (let key in portfolio) {
 
-      return {
-        fundName: fund.fundName,
-        totalUnits: fund.totalUnits,
-        totalInvestment: fund.totalInvestment,
-        currentValue: currentValue,
-        profitLoss: profitLoss
-      };
+      const item = portfolio[key];
 
-    });
+      // FUND
+      if (!item.isStock) {
+        item.currentValue = item.totalUnits * item.nav;
+      }
 
-    res.json(result);
+      // STOCK
+      if (item.isStock) {
+
+        try {
+          const response = await axios.get(
+            `https://finnhub.io/api/v1/quote?symbol=${item.name}&token=${process.env.FINNHUB_API_KEY}`
+          );
+
+          const price = response.data.c || 0;
+          item.currentValue = item.totalUnits * price;
+
+        } catch (err) {
+          console.error("Stock price error:", item.name);
+          item.currentValue = 0;
+        }
+      }
+
+      item.profitLoss = item.currentValue - item.totalInvestment;
+    }
+
+    res.json(Object.values(portfolio));
 
   } catch (error) {
+    console.error("PORTFOLIO ERROR:", error);
     res.status(500).json({ message: "Error calculating portfolio" });
   }
 };
