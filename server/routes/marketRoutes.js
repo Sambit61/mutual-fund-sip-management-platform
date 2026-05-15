@@ -55,36 +55,52 @@ router.get("/stocks", async (req, res) => {
 
 });
 // HISTORY (ALPHA VANTAGE)
+// HISTORY (FINNHUB)
 router.get("/history/:symbol", async (req, res) => {
 
   try {
 
     const { symbol } = req.params;
 
-    const apiKey = process.env.ALPHA_VANTAGE_KEY;
+    const to = Math.floor(Date.now() / 1000);
+
+    const from = to - (30 * 24 * 60 * 60);
 
     const response = await axios.get(
-      `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${apiKey}`
+      "https://finnhub.io/api/v1/stock/candle",
+      {
+        params: {
+          symbol,
+          resolution: "D",
+          from,
+          to,
+          token: process.env.FINNHUB_API_KEY
+        }
+      }
     );
 
-    const data = response.data["Time Series (Daily)"];
-
-    if (!data) {
-      return res.status(400).json({ message: "No data found" });
+    // ❌ No data
+    if (response.data.s !== "ok") {
+      return res.status(400).json({
+        message: "No chart data found"
+      });
     }
 
-    const formatted = Object.keys(data).map(date => ({
-      date,
-      close: parseFloat(data[date]["4. close"])
+    // ✅ Format chart data
+    const formatted = response.data.t.map((time, index) => ({
+      date: new Date(time * 1000).toLocaleDateString(),
+      close: response.data.c[index]
     }));
 
-    const finalData = formatted.slice(0, 30).reverse(); // last 30 days
-    res.json(finalData);
+    res.json(formatted);
 
   } catch (err) {
 
-    console.error(err);
-    res.status(500).json({ message: "Error fetching history" });
+    console.error("HISTORY ERROR:", err.message);
+
+    res.status(500).json({
+      message: "Error fetching history"
+    });
 
   }
 
