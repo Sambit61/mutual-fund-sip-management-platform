@@ -1,7 +1,12 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ||"https://mutual-fund-sip-management-platform.onrender.com/api"
+
+  baseURL:
+    import.meta.env.MODE === "development"
+      ? "http://localhost:5000/api"
+      : "https://mutual-fund-sip-management-platform.onrender.com/api"
+
 });
 
 export default api;

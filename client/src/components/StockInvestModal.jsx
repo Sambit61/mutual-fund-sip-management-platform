@@ -3,7 +3,7 @@ import api from "../api/api";
 
 const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
-function InvestModal({ fund, closeModal }) {
+function StockInvestModal({ stock, closeModal }) {
 
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,7 +41,7 @@ function InvestModal({ fund, closeModal }) {
 
         name: "MUTUALSIP",
 
-        description: fund.fundName,
+        description: `Invest in ${stock.symbol}`,
 
         order_id: data.id,
 
@@ -54,9 +54,9 @@ function InvestModal({ fund, closeModal }) {
             await api.post(
               "/transactions/buy",
               {
-                fundId: fund._id,
+                symbol: stock.symbol,
                 amount: Number(amount),
-                assetType: "FUND"
+                assetType: "STOCK"
               },
               {
                 headers: {
@@ -65,7 +65,7 @@ function InvestModal({ fund, closeModal }) {
               }
             );
 
-            alert("Mutual Fund Investment Successful");
+            alert("Stock Investment Successful");
 
             closeModal();
 
@@ -73,7 +73,7 @@ function InvestModal({ fund, closeModal }) {
 
             console.error(err);
 
-            alert("Payment successful but saving failed");
+            alert("Payment successful but stock save failed");
 
           }
 
@@ -113,11 +113,11 @@ function InvestModal({ fund, closeModal }) {
       <div className="bg-[#111827] p-6 rounded-xl w-80">
 
         <h2 className="text-xl font-bold text-white mb-3">
-          Invest in {fund.fundName}
+          Invest in {stock.symbol}
         </h2>
 
         <p className="text-green-400 mb-4">
-          NAV: ₹{fund.nav}
+          Current Price: ${stock.price}
         </p>
 
         <input
@@ -151,4 +151,4 @@ function InvestModal({ fund, closeModal }) {
 
 }
 
-export default InvestModal;
+export default StockInvestModal;

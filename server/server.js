@@ -23,7 +23,8 @@ app.use((req, res, next) => {
   next();
 });
 app.use(cors({
-  origin: "https://mfsip.vercel.app",
+  origin:[ "http://localhost:5173",
+           "https://mfsip.vercel.app" ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
