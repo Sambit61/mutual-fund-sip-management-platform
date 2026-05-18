@@ -20,6 +20,11 @@ function InvestModal({ fund, closeModal }) {
       return;
     }
 
+    if (!razorpayKeyId) {
+      alert("Razorpay API Key is missing. Please check your Vercel Environment Variables.");
+      return;
+    }
+
     try {
 
       setLoading(true);

@@ -11,12 +11,12 @@ function StockInvestModal({ stock, closeModal }) {
   const handlePayment = async () => {
 
     if (!amount || Number(amount) <= 0) {
-      alert("Enter a valid amount");
+      alert("Enter valid amount");
       return;
     }
 
     if (!window.Razorpay) {
-      alert("Payment SDK not loaded");
+      alert("Razorpay SDK failed to load");
       return;
     }
 
@@ -24,6 +24,7 @@ function StockInvestModal({ stock, closeModal }) {
 
       setLoading(true);
 
+      // CREATE ORDER
       const { data } = await api.post(
         "/payment/create-order",
         {
@@ -54,7 +55,7 @@ function StockInvestModal({ stock, closeModal }) {
             await api.post(
               "/transactions/buy",
               {
-                symbol: stock.symbol,
+                stockSymbol: stock.symbol,
                 amount: Number(amount),
                 assetType: "STOCK"
               },
@@ -73,7 +74,7 @@ function StockInvestModal({ stock, closeModal }) {
 
             console.error(err);
 
-            alert("Payment successful but stock save failed");
+            alert("Payment successful but transaction failed");
 
           }
 
