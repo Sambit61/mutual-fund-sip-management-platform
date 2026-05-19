@@ -7,33 +7,61 @@ function Login({ setToken, setPage }) {
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
+
     try {
 
-      const res = await api.post("/auth/login", { email, password });
+      const res = await api.post(
+        "/auth/login",
+        {
+          email,
+          password
+        }
+      );
 
-      localStorage.setItem("token", res.data.token);
+      // ✅ Store token
+      localStorage.setItem(
+        "token",
+        res.data.token
+      );
+
+      // ✅ Store role
+      localStorage.setItem(
+        "role",
+        res.data.role
+      );
+
+      // ✅ Update app state
       setToken(res.data.token);
+
+      // ✅ Redirect
       setPage("dashboard");
 
-      // Optional: replace alert with toast in future
-      // alert("Login successful");
-
     } catch (err) {
-      alert("Login failed");
+
+      console.error(err);
+
+      alert(
+        err.response?.data?.message ||
+        "Login failed"
+      );
+
     }
+
   };
 
   return (
 
     <div className="p-6">
 
-      <h2 className="text-xl mb-4">Login</h2>
+      <h2 className="text-xl mb-4">
+        Login
+      </h2>
 
       <input
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="border p-2 block mb-3"
+        className="border p-2 block mb-3 w-full"
       />
 
       <input
@@ -41,34 +69,46 @@ function Login({ setToken, setPage }) {
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="border p-2 block mb-3"
+        className="border p-2 block mb-3 w-full"
       />
 
       <button
         onClick={handleLogin}
-        className="bg-blue-600 text-white px-4 py-2 rounded"
+        className="bg-blue-600 text-white px-4 py-2 rounded w-full"
       >
         Login
       </button>
 
+      {/* Forgot password */}
+
       <div className="mt-3">
+
         <span
           className="text-blue-600 text-sm cursor-pointer block mb-2"
-          onClick={() => alert("Forgot password functionality coming soon!")}
+          onClick={() =>
+            alert(
+              "Forgot password functionality coming soon!"
+            )
+          }
         >
           Forgot password?
         </span>
+
       </div>
 
-      {/* 🔹 REGISTER LINK */}
+      {/* Register */}
+
       <p className="mt-3 text-sm">
+
         Don’t have an account?{" "}
+
         <span
           className="text-blue-600 cursor-pointer"
           onClick={() => setPage("register")}
         >
           Register
         </span>
+
       </p>
 
     </div>

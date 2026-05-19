@@ -1,48 +1,95 @@
 import { useState, useEffect } from "react";
+
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Funds from "./pages/Funds";
 import Portfolio from "./pages/Portfolio";
 import Transactions from "./pages/Transaction";
+import AdminDashboard from "./pages/AdminDashboard";
+
 import Navbar from "./components/Navbar";
 import Landing from "./pages/Landing";
 
 function App() {
 
-  const [page, setPage] = useState("landing"); // ✅ start with landing
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [page, setPage] = useState("landing");
 
-  // ✅ INACTIVITY LOGOUT (only when logged in)
+  const [token, setToken] = useState(
+    localStorage.getItem("token")
+  );
+
+  const role = localStorage.getItem("role");
+
+  // ✅ AUTO LOGOUT
+
   useEffect(() => {
 
-    if (!token) return; // 🔴 important
+    if (!token) return;
 
     let timeout;
 
     const logoutUser = () => {
+
       localStorage.removeItem("token");
+
+      localStorage.removeItem("role");
+
       setToken(null);
-      setPage("login"); // redirect to login
+
+      setPage("login");
+
       alert("Logged out due to inactivity");
+
     };
 
     const resetTimer = () => {
+
       clearTimeout(timeout);
-      timeout = setTimeout(logoutUser, 600000); // 10 minutes
+
+      timeout = setTimeout(
+        logoutUser,
+        600000 // 10 mins
+      );
+
     };
 
-    window.addEventListener("mousemove", resetTimer);
-    window.addEventListener("keydown", resetTimer);
-    window.addEventListener("click", resetTimer);
+    window.addEventListener(
+      "mousemove",
+      resetTimer
+    );
+
+    window.addEventListener(
+      "keydown",
+      resetTimer
+    );
+
+    window.addEventListener(
+      "click",
+      resetTimer
+    );
 
     resetTimer();
 
     return () => {
+
       clearTimeout(timeout);
-      window.removeEventListener("mousemove", resetTimer);
-      window.removeEventListener("keydown", resetTimer);
-      window.removeEventListener("click", resetTimer);
+
+      window.removeEventListener(
+        "mousemove",
+        resetTimer
+      );
+
+      window.removeEventListener(
+        "keydown",
+        resetTimer
+      );
+
+      window.removeEventListener(
+        "click",
+        resetTimer
+      );
+
     };
 
   }, [token]);
@@ -51,27 +98,62 @@ function App() {
 
     <div>
 
-      <Navbar setPage={setPage} token={token} setToken={setToken} />
+      <Navbar
+        setPage={setPage}
+        token={token}
+        setToken={setToken}
+      />
 
-      {/* 🔹 NOT LOGGED IN */}
+      {/* NOT LOGGED IN */}
+
       {!token ? (
 
         page === "register" ? (
+
           <Register setPage={setPage} />
+
         ) : page === "login" ? (
-          <Login setToken={setToken} setPage={setPage} />
+
+          <Login
+            setToken={setToken}
+            setPage={setPage}
+          />
+
         ) : (
+
           <Landing setPage={setPage} />
+
         )
 
       ) : (
 
-        /* 🔹 LOGGED IN */
+        /* LOGGED IN */
+
         <div>
-          {page === "dashboard" && <Dashboard />}
-          {page === "funds" && <Funds />}
-          {page === "portfolio" && <Portfolio />}
-          {page === "transactions" && <Transactions />}
+
+          {page === "dashboard" && (
+            <Dashboard />
+          )}
+
+          {page === "funds" && (
+            <Funds />
+          )}
+
+          {page === "portfolio" && (
+            <Portfolio />
+          )}
+
+          {page === "transactions" && (
+            <Transactions />
+          )}
+
+          {/* ✅ ADMIN PAGE */}
+
+          {page === "admin" &&
+            role === "admin" && (
+              <AdminDashboard />
+          )}
+
         </div>
 
       )}
