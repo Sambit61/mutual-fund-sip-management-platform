@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import api from "../api/api";
 import SummaryCard from "../components/SummaryCard";
 import StockChart from "../components/StockChart";
@@ -7,21 +8,40 @@ import { Wallet, BarChart3, TrendingUp, Newspaper, PieChart, Rocket } from "luci
 function Dashboard() {
   const [portfolio, setPortfolio] = useState([]);
   const [selectedStock, setSelectedStock] = useState("AAPL");
+  const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchPortfolio = async () => {
       try {
-        const res = await api.get("/transactions/portfolio", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        setLoading(true);
+  
+        const res = await api.get(
+          "/transactions/portfolio",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+  
         setPortfolio(res.data);
+  
       } catch (err) {
         console.error(err);
+  
+        toast.error(
+          "Failed to load portfolio"
+        );
+  
+      } finally {
+        setLoading(false);
       }
     };
+  
     fetchPortfolio();
   }, [token]);
+
 
   useEffect(() => {
     const storedStock = localStorage.getItem("selectedStock");
@@ -31,6 +51,20 @@ function Dashboard() {
   const totalInvestment = portfolio.reduce((sum, item) => sum + item.totalInvestment, 0);
   const totalValue = portfolio.reduce((sum, item) => sum + item.currentValue, 0);
   const totalProfit = totalValue - totalInvestment;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="w-12 h-12 border-4 border-gray-700 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+  
+          <p className="text-gray-400">
+            Loading portfolio...
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
 
   return (
     <div className="p-8 min-h-screen text-white max-w-7xl mx-auto">

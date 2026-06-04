@@ -1,6 +1,14 @@
-function Navbar({ setPage, token, setToken }) {
+import { useNavigate } from "react-router-dom";
 
-  const role = localStorage.getItem("role");
+function Navbar() {
+
+  const navigate = useNavigate();
+
+  const token =
+    localStorage.getItem("token");
+
+  const role =
+    localStorage.getItem("role");
 
   const handleLogout = () => {
 
@@ -8,37 +16,58 @@ function Navbar({ setPage, token, setToken }) {
 
     localStorage.removeItem("role");
 
-    setToken(null);
-
-    setPage("login");
+    navigate("/login");
 
   };
 
   const navLinks = [
-    { id: "dashboard", label: "Home" },
-    { id: "funds", label: "Funds" },
-    { id: "portfolio", label: "Portfolio" },
-    { id: "transactions", label: "Transactions" },
+
+    {
+      path: "/dashboard",
+      label: "Home"
+    },
+
+    {
+      path: "/funds",
+      label: "Funds"
+    },
+
+    {
+      path: "/portfolio",
+      label: "Portfolio"
+    },
+
+    {
+      path: "/transactions",
+      label: "Transactions"
+    }
+
   ];
 
   return (
 
     <div className="flex justify-between items-center px-10 py-5 bg-transparent text-sm font-medium z-10 relative">
 
-      {/* LEFT: Logo */}
+      {/* LOGO */}
 
       <div className="flex items-center">
 
         <span
           className="text-brand text-lg font-bold tracking-widest cursor-pointer"
-          onClick={() => setPage(token ? "dashboard" : "landing")}
+          onClick={() =>
+            navigate(
+              token
+                ? "/dashboard"
+                : "/"
+            )
+          }
         >
           MUTUALSIP
         </span>
 
       </div>
 
-      {/* CENTER: NAV LINKS */}
+      {/* NAVIGATION */}
 
       {token && (
 
@@ -47,8 +76,10 @@ function Navbar({ setPage, token, setToken }) {
           {navLinks.map((link) => (
 
             <button
-              key={link.id}
-              onClick={() => setPage(link.id)}
+              key={link.path}
+              onClick={() =>
+                navigate(link.path)
+              }
               className="transition-colors hover:text-white"
             >
               {link.label}
@@ -56,12 +87,12 @@ function Navbar({ setPage, token, setToken }) {
 
           ))}
 
-          {/* ✅ ADMIN BUTTON */}
-
           {role === "admin" && (
 
             <button
-              onClick={() => setPage("admin")}
+              onClick={() =>
+                navigate("/admin")
+              }
               className="text-red-400 hover:text-red-300 font-bold"
             >
               Admin
@@ -73,7 +104,7 @@ function Navbar({ setPage, token, setToken }) {
 
       )}
 
-      {/* RIGHT SECTION */}
+      {/* RIGHT SIDE */}
 
       <div>
 
@@ -82,14 +113,18 @@ function Navbar({ setPage, token, setToken }) {
           <div className="flex gap-4 items-center">
 
             <button
-              onClick={() => setPage("register")}
+              onClick={() =>
+                navigate("/register")
+              }
               className="text-white hover:text-brand transition-colors font-semibold"
             >
               Register
             </button>
 
             <button
-              onClick={() => setPage("login")}
+              onClick={() =>
+                navigate("/login")
+              }
               className="bg-brand text-gray-900 px-5 py-2 rounded font-semibold hover:bg-brand-dark hover:text-white transition-colors"
             >
               Login

@@ -55,7 +55,7 @@ function StockInvestModal({ stock, closeModal }) {
             await api.post(
               "/transactions/buy",
               {
-                stockSymbol: stock.symbol,
+                symbol: stock.symbol,
                 amount: Number(amount),
                 assetType: "STOCK"
               },
