@@ -13,6 +13,10 @@ const mutualFundSchema = new mongoose.Schema({
     unique: true
   },
 
+  amfiCode: {
+    type: String
+  },
+
   category: {
     type: String
   },
