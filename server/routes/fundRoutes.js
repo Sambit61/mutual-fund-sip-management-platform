@@ -4,7 +4,8 @@ const {
   createFund,
   getFunds,
   deleteFund,
-  updateFund
+  updateFund,
+  syncFundNav
 } = require("../controllers/fundController");
 
 const {
@@ -51,6 +52,12 @@ router.get(
     next();
   },
   getFunds
+);
+router.post(
+  "/sync/:id",
+  protect,
+  adminMiddleware,
+  syncFundNav
 );
 
 module.exports = router;

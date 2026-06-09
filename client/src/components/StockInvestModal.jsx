@@ -1,9 +1,12 @@
 import { useState } from "react";
 import api from "../api/api";
+import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
 
 const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 function StockInvestModal({ stock, closeModal }) {
+  const { token } = useAuth();
 
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
@@ -11,12 +14,12 @@ function StockInvestModal({ stock, closeModal }) {
   const handlePayment = async () => {
 
     if (!amount || Number(amount) <= 0) {
-      alert("Enter valid amount");
+      toast.error("Enter valid amount");
       return;
     }
 
     if (!window.Razorpay) {
-      alert("Razorpay SDK failed to load");
+      toast.error("Razorpay SDK failed to load");
       return;
     }
 
@@ -50,8 +53,6 @@ function StockInvestModal({ stock, closeModal }) {
 
           try {
 
-            const token = localStorage.getItem("token");
-
             await api.post(
               "/transactions/buy",
               {
@@ -66,7 +67,7 @@ function StockInvestModal({ stock, closeModal }) {
               }
             );
 
-            alert("Stock Investment Successful");
+            toast.success("Stock Investment Successful");
 
             closeModal();
 
@@ -74,7 +75,7 @@ function StockInvestModal({ stock, closeModal }) {
 
             console.error(err);
 
-            alert("Payment successful but transaction failed");
+            toast.error("Payment successful but transaction failed");
 
           }
 
@@ -94,7 +95,7 @@ function StockInvestModal({ stock, closeModal }) {
 
       console.error(err);
 
-      alert(
+      toast.error(
         err.response?.data?.message ||
         "Payment failed"
       );

@@ -207,3 +207,60 @@ exports.getPortfolio = async (req, res) => {
     res.status(500).json({ message: "Error calculating portfolio" });
   }
 };
+
+
+// ================= SWITCH =================
+exports.switchFund = async (req, res) => {
+  try {
+    const { fromFundId, toFundId, units } = req.body;
+
+    // 1. Validate both funds
+    const fromFund = await MutualFund.findById(fromFundId);
+    const toFund = await MutualFund.findById(toFundId);
+
+    if (!fromFund || !toFund) {
+      return res.status(404).json({ message: "One or both funds not found" });
+    }
+
+    // 2. Calculate Redemption (SELL)
+    const redeemAmount = units * fromFund.nav;
+
+    // 3. Calculate Purchase (BUY)
+    const buyUnits = redeemAmount / toFund.nav;
+
+    // Note: Since you use Compass/Standalone MongoDB for development, 
+    // we perform these sequentially without Mongoose sessions to avoid local crashes.
+
+    // 4. Execute SELL transaction
+    const sellTransaction = await Transaction.create({
+      investor: req.user._id,
+      fund: fromFundId,
+      amount: redeemAmount,
+      nav: fromFund.nav,
+      units: -units, // Negative units for selling
+      type: "SELL",
+      assetType: "FUND"
+    });
+
+    // 5. Execute BUY transaction
+    const buyTransaction = await Transaction.create({
+      investor: req.user._id,
+      fund: toFundId,
+      amount: redeemAmount,
+      nav: toFund.nav,
+      units: buyUnits,
+      type: "BUY",
+      assetType: "FUND"
+    });
+
+    res.status(201).json({
+      message: "Switch successful",
+      sellTransaction,
+      buyTransaction
+    });
+
+  } catch (error) {
+    console.error("SWITCH ERROR:", error);
+    res.status(500).json({ message: "Fund switch failed" });
+  }
+};

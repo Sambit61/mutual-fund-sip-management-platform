@@ -1,9 +1,12 @@
 import { useState } from "react";
 import api from "../api/api";
+import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
 
 const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 function InvestModal({ fund, closeModal }) {
+  const { token } = useAuth();
 
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
@@ -11,17 +14,17 @@ function InvestModal({ fund, closeModal }) {
   const handlePayment = async () => {
 
     if (!amount || Number(amount) <= 0) {
-      alert("Enter a valid amount");
+      toast.error("Enter a valid amount");
       return;
     }
 
     if (!window.Razorpay) {
-      alert("Payment SDK not loaded");
+      toast.error("Payment SDK not loaded");
       return;
     }
 
     if (!razorpayKeyId) {
-      alert("Razorpay API Key is missing. Please check your Vercel Environment Variables.");
+      toast.error("Razorpay API Key is missing. Please check your Vercel Environment Variables.");
       return;
     }
 
@@ -54,8 +57,6 @@ function InvestModal({ fund, closeModal }) {
 
           try {
 
-            const token = localStorage.getItem("token");
-
             await api.post(
               "/transactions/buy",
               {
@@ -70,7 +71,7 @@ function InvestModal({ fund, closeModal }) {
               }
             );
 
-            alert("Mutual Fund Investment Successful");
+            toast.success("Mutual Fund Investment Successful");
 
             closeModal();
 
@@ -78,7 +79,7 @@ function InvestModal({ fund, closeModal }) {
 
             console.error(err);
 
-            alert("Payment successful but saving failed");
+            toast.error("Payment successful but saving failed");
 
           }
 
@@ -98,7 +99,7 @@ function InvestModal({ fund, closeModal }) {
 
       console.error(err);
 
-      alert(
+      toast.error(
         err.response?.data?.message ||
         "Payment failed"
       );

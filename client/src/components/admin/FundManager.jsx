@@ -1,14 +1,19 @@
 import { useState } from "react";
 import api from "../../api/api";
+import toast from "react-hot-toast";
+import { useAuth } from "../../context/AuthContext";
 
 function FundManager({
   funds,
   fetchFunds,
   fetchStats
 }) {
+  const { token } = useAuth();
 
   const [fundName, setFundName] = useState("");
   const [fundCode, setFundCode] = useState("");
+  const [amfiCode, setAmfiCode] =
+  useState("");
   const [category, setCategory] = useState("");
   const [nav, setNav] = useState("");
 
@@ -24,14 +29,12 @@ function FundManager({
 
     try {
 
-      const token =
-        localStorage.getItem("token");
-
       await api.post(
         "/funds",
         {
           fundName,
           fundCode,
+          amfiCode,
           category,
           nav
         },
@@ -43,12 +46,13 @@ function FundManager({
         }
       );
 
-      alert(
+      toast.success(
         "Fund added successfully"
       );
 
       setFundName("");
       setFundCode("");
+      setAmfiCode("");
       setCategory("");
       setNav("");
 
@@ -59,7 +63,7 @@ function FundManager({
 
       console.error(err);
 
-      alert(
+      toast.error(
         err.response?.data?.message ||
         "Failed to add fund"
       );
@@ -74,9 +78,6 @@ function FundManager({
 
     try {
 
-      const token =
-        localStorage.getItem("token");
-
       await api.delete(
         `/funds/${id}`,
         {
@@ -87,7 +88,9 @@ function FundManager({
         }
       );
 
-      alert("Fund deleted");
+      toast.success(
+        "Fund deleted successfully"
+      );
 
       fetchFunds();
       fetchStats();
@@ -96,7 +99,7 @@ function FundManager({
 
       console.error(err);
 
-      alert(
+      toast.error(
         err.response?.data?.message ||
         "Delete failed"
       );
@@ -111,9 +114,6 @@ function FundManager({
 
     try {
 
-      const token =
-        localStorage.getItem("token");
-
       await api.put(
         `/funds/${id}`,
         {
@@ -127,7 +127,7 @@ function FundManager({
         }
       );
 
-      alert(
+      toast.success(
         "NAV updated successfully"
       );
 
@@ -140,7 +140,7 @@ function FundManager({
 
       console.error(err);
 
-      alert(
+      toast.error(
         err.response?.data?.message ||
         "Update failed"
       );
@@ -148,6 +148,40 @@ function FundManager({
     }
 
   };
+  // SYNC NAV
+
+const handleSyncNav = async (id) => {
+
+  try {
+
+    const res = await api.post(
+      `/funds/sync/${id}`,
+      {},
+      {
+        headers: {
+          Authorization:
+            `Bearer ${token}`
+        }
+      }
+    );
+
+    toast.success(
+      `NAV Synced: ₹${res.data.nav}`
+    );
+    fetchFunds();
+
+  } catch (err) {
+
+    console.error(err);
+
+    toast.error(
+      err.response?.data?.message ||
+      "NAV Sync Failed"
+    );
+
+  }
+
+};
 
   return (
 
@@ -178,6 +212,15 @@ function FundManager({
           }
           className="w-full p-3 mb-3 rounded bg-gray-900 border border-gray-700"
         />
+        <input
+  type="text"
+  placeholder="AMFI Code"
+  value={amfiCode}
+  onChange={(e) =>
+    setAmfiCode(e.target.value)
+  }
+  className="w-full p-3 mb-3 rounded bg-gray-900 border border-gray-700"
+/>
 
         <input
           type="text"
@@ -273,28 +316,39 @@ function FundManager({
 
               <div className="flex gap-2">
 
-                <button
-                  onClick={() => {
-                    setEditingId(fund._id);
-                    setEditNav(fund.nav);
-                  }}
-                  className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded"
-                >
-                  Edit NAV
-                </button>
+<button
+  onClick={() => {
+    setEditingId(fund._id);
+    setEditNav(fund.nav);
+  }}
+  className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded"
+>
+  Edit NAV
+</button>
 
-                <button
-                  onClick={() =>
-                    handleDeleteFund(
-                      fund._id
-                    )
-                  }
-                  className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
-                >
-                  Delete
-                </button>
+<button
+  onClick={() =>
+    handleSyncNav(
+      fund._id
+    )
+  }
+  className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded"
+>
+  Sync NAV
+</button>
 
-              </div>
+<button
+  onClick={() =>
+    handleDeleteFund(
+      fund._id
+    )
+  }
+  className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
+>
+  Delete
+</button>
+
+</div>
 
             </div>
 

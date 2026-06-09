@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import api from "../api/api";
 import AdminSidebar from "../components/admin/AdminSidebar";
 import FundManager from "../components/admin/FundManager";
+import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
 
 function AdminDashboard() {
+  const { token } = useAuth();
 
   // ✅ FORM STATES
 
@@ -53,9 +56,6 @@ function AdminDashboard() {
 
     try {
 
-      const token =
-        localStorage.getItem("token");
-
       const res = await api.get(
         "/admin/stats",
         {
@@ -81,9 +81,6 @@ function AdminDashboard() {
   const fetchTransactions = async () => {
 
     try {
-
-      const token =
-        localStorage.getItem("token");
 
       const res = await api.get(
         "/admin/transactions",
@@ -111,9 +108,6 @@ function AdminDashboard() {
 
     try {
 
-      const token =
-        localStorage.getItem("token");
-
       const res = await api.get(
         "/admin/users",
         {
@@ -140,9 +134,6 @@ function AdminDashboard() {
 
     try {
 
-      const token =
-        localStorage.getItem("token");
-
       await api.put(
         `/admin/make-admin/${id}`,
         {},
@@ -154,7 +145,7 @@ function AdminDashboard() {
         }
       );
 
-      alert(
+      toast.success(
         "User promoted to admin"
       );
 
@@ -164,7 +155,7 @@ function AdminDashboard() {
 
       console.error(err);
 
-      alert(
+      toast.error(
         err.response?.data?.message ||
         "Failed to update role"
       );
@@ -184,7 +175,7 @@ function AdminDashboard() {
 
     fetchUsers();
 
-  }, []);
+  }, [token]);
 
   return (
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
 import SummaryCard from "../components/SummaryCard";
+import { useAuth } from "../context/AuthContext";
 
 import {
   Chart as ChartJS,
@@ -30,7 +31,7 @@ function Portfolio() {
   const [portfolio, setPortfolio] = useState([]);
   const [transactions, setTransactions] = useState([]);
 
-  const token = localStorage.getItem("token");
+  const { token } = useAuth();
   console.log("TOKEN:", token);
 
   useEffect(() => {
@@ -64,7 +65,7 @@ function Portfolio() {
     fetchPortfolio();
     fetchTransactions();
 
-  }, []);
+  }, [token]);
 
   // 🔹 SAFE TOTALS
   const totalInvestment = portfolio.reduce(
@@ -131,12 +132,12 @@ function Portfolio() {
 
   return (
 
-    <div style={{ padding: "20px" }}>
+    <div className="p-4 md:p-8 max-w-7xl mx-auto text-white">
 
-      <h2>Portfolio Dashboard</h2>
+      <h2 className="text-2xl md:text-3xl font-bold mb-6">Portfolio Dashboard</h2>
 
       {/* SUMMARY */}
-      <div className="flex gap-6 mb-8 flex-wrap">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
 
         <SummaryCard
           title="Total Investment"
@@ -157,56 +158,54 @@ function Portfolio() {
 
       {/* PIE CHART */}
       {portfolio.length > 0 && (
-        <div style={{ width: "400px", marginBottom: "30px" }}>
-          <h3>Investment Distribution</h3>
+        <div className="w-full max-w-md mx-auto md:mx-0 mb-8 bg-[var(--color-card-bg)] p-4 rounded-xl border border-gray-800 shadow-lg">
+          <h3 className="text-lg font-semibold mb-4 text-center md:text-left">Investment Distribution</h3>
           <Pie data={pieChartData} />
         </div>
       )}
 
       {/* LINE CHART */}
       {transactions.length > 0 && (
-        <div style={{ width: "600px", marginBottom: "30px" }}>
-          <h3>Portfolio Growth</h3>
+        <div className="w-full max-w-3xl mx-auto md:mx-0 mb-8 bg-[var(--color-card-bg)] p-4 rounded-xl border border-gray-800 shadow-lg">
+          <h3 className="text-lg font-semibold mb-4 text-center md:text-left">Portfolio Growth</h3>
           <Line data={lineChartData} />
         </div>
       )}
 
       {/* LIST */}
-      <h3>Investments</h3>
+      <h3 className="text-xl font-semibold mb-4">Investments</h3>
 
       {portfolio.length === 0 ? (
-        <p>No investments yet</p>
+        <p className="text-gray-400">No investments yet</p>
       ) : (
-        portfolio.map((item, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {portfolio.map((item, index) => (
 
-          <div
-            key={index}
-            style={{
-              border: "1px solid gray",
-              padding: "10px",
-              marginBottom: "10px",
-              borderRadius: "8px"
-            }}
-          >
+            <div
+              key={index}
+              className="bg-[var(--color-card-bg)] border border-gray-800 p-5 rounded-xl shadow-lg hover:border-gray-600 transition"
+            >
 
-            <h4>{item.name}</h4>
+              <h4 className="text-lg font-bold mb-3">{item.name}</h4>
 
-            <p>Total Units: {(item.totalUnits || 0).toFixed(2)}</p>
+              <div className="space-y-2 text-sm">
+                <p className="flex justify-between text-gray-300"><span>Total Units:</span> <span className="font-medium text-white">{(item.totalUnits || 0).toFixed(2)}</span></p>
 
-            <p>Total Investment: ₹{(item.totalInvestment || 0).toFixed(2)}</p>
+                <p className="flex justify-between text-gray-300"><span>Total Investment:</span> <span className="font-medium text-white">₹{(item.totalInvestment || 0).toFixed(2)}</span></p>
 
-            <p>Current Value: ₹{(item.currentValue || 0).toFixed(2)}</p>
+                <p className="flex justify-between text-gray-300"><span>Current Value:</span> <span className="font-medium text-white">₹{(item.currentValue || 0).toFixed(2)}</span></p>
 
-            <p style={{
-              color: item.profitLoss >= 0 ? "green" : "red",
-              fontWeight: "bold"
-            }}>
-              Profit/Loss: ₹{(item.profitLoss || 0).toFixed(2)}
-            </p>
+                <p className="flex justify-between pt-2 border-t border-gray-700 font-bold" style={{
+                  color: item.profitLoss >= 0 ? "var(--color-brand)" : "#f87171"
+                }}>
+                  <span>Profit/Loss:</span> <span>₹{(item.profitLoss || 0).toFixed(2)}</span>
+                </p>
+              </div>
 
-          </div>
+            </div>
 
-        ))
+          ))}
+        </div>
       )}
 
     </div>

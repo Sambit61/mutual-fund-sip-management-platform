@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 import api from "../api/api";
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,12 +29,14 @@ function Login() {
         email,
         password,
       });
-
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("role", res.data.role);
-
-      toast.success("Login successful");
+//AUTHCONTEXT 
+      login(
+        res.data.token,
+        res.data.role
+      );
+      
       navigate("/dashboard");
+
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.message || "Login failed");

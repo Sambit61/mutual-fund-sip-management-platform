@@ -1,20 +1,19 @@
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function Navbar() {
 
   const navigate = useNavigate();
 
-  const token =
-    localStorage.getItem("token");
-
-  const role =
-    localStorage.getItem("role");
+  const {
+    token,
+    user,
+    logout
+  } = useAuth();
 
   const handleLogout = () => {
 
-    localStorage.removeItem("token");
-
-    localStorage.removeItem("role");
+    logout();
 
     navigate("/login");
 
@@ -46,7 +45,7 @@ function Navbar() {
 
   return (
 
-    <div className="flex justify-between items-center px-10 py-5 bg-transparent text-sm font-medium z-10 relative">
+    <div className="flex flex-col md:flex-row justify-between items-center px-4 md:px-10 py-4 gap-4 bg-transparent text-sm font-medium z-10 relative">
 
       {/* LOGO */}
 
@@ -71,7 +70,7 @@ function Navbar() {
 
       {token && (
 
-        <div className="flex gap-8 items-center text-gray-400">
+        <div className="flex flex-wrap justify-center gap-4 md:gap-8 items-center text-gray-400">
 
           {navLinks.map((link) => (
 
@@ -87,7 +86,7 @@ function Navbar() {
 
           ))}
 
-          {role === "admin" && (
+          {user?.role === "admin" && (
 
             <button
               onClick={() =>
@@ -134,7 +133,7 @@ function Navbar() {
 
         ) : (
 
-          <div className="flex gap-6 items-center text-gray-400">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-6 items-center text-gray-400">
 
             <button
               className="hover:text-white transition-colors"

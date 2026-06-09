@@ -4,12 +4,13 @@ import api from "../api/api";
 import SummaryCard from "../components/SummaryCard";
 import StockChart from "../components/StockChart";
 import { Wallet, BarChart3, TrendingUp, Newspaper, PieChart, Rocket } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 function Dashboard() {
   const [portfolio, setPortfolio] = useState([]);
   const [selectedStock, setSelectedStock] = useState("AAPL");
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token");
+  const { token } = useAuth();
 
   useEffect(() => {
     const fetchPortfolio = async () => {
@@ -70,7 +71,7 @@ function Dashboard() {
     <div className="p-8 min-h-screen text-white max-w-7xl mx-auto">
       
       {/* Header */}
-      <div className="flex justify-between items-end mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
         <div>
           <h1 className="text-4xl font-bold mb-2">Welcome back, Adrian</h1>
           <p className="text-xs text-gray-400 font-medium tracking-wider">PORTFOLIO PERFORMANCE • LAST UPDATED 2 MINS AGO</p>
@@ -86,7 +87,7 @@ function Dashboard() {
       </div>
 
       {/* Summary Cards */}
-      <div className="flex gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <SummaryCard
           title="Total Investment"
           value={`$${totalInvestment > 0 ? totalInvestment.toLocaleString(undefined, {minimumFractionDigits: 2}) : '128,450.00'}`}
@@ -108,9 +109,9 @@ function Dashboard() {
       </div>
 
       {/* Chart Section */}
-      <div className="bg-[var(--color-card-bg)] border border-gray-800 rounded-xl p-6 mb-8 shadow-lg relative">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex gap-2">
+      <div className="bg-[var(--color-card-bg)] border border-gray-800 rounded-xl p-4 md:p-6 mb-8 shadow-lg relative">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+          <div className="flex gap-2 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 whitespace-nowrap custom-scrollbar">
             {["AAPL", "MSFT", "TSLA", "AMZN", "GOOGL", "NVDA"].map((symbol) => (
               <button
                 key={symbol}
@@ -140,7 +141,7 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="flex justify-between items-start absolute z-10 w-full pr-12">
+        <div className="flex justify-between items-start static lg:absolute z-10 w-full lg:pr-12 mb-4 lg:mb-0">
           <div>
             <h3 className="text-lg font-semibold text-white">Apple Inc. (AAPL)</h3>
             <p className="text-xs text-gray-400">NasdaqGS • Real-time Data</p>
@@ -157,7 +158,7 @@ function Dashboard() {
       </div>
 
       {/* Bottom Section */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Market Intelligence */}
         <div className="bg-[var(--color-card-bg)] border border-gray-800 rounded-xl p-6 shadow-lg">
