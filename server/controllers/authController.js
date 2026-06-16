@@ -36,7 +36,8 @@ exports.registerUser = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    console.error("Registration Error:", error);
+    res.status(500).json({ message: "Server error: " + (error.message || "Unknown error") });
   }
 };
 
@@ -74,7 +75,8 @@ exports.loginUser = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    console.error("Login Error:", error);
+    res.status(500).json({ message: "Server error: " + (error.message || "Unknown error") });
   }
 };
 
@@ -146,14 +148,10 @@ exports.forgotPassword = async (req, res) => {
     });
 
   } catch (error) {
-
-    console.error(error);
-
+    console.error("Forgot Password Error:", error);
     res.status(500).json({
-      message:
-        "Failed to send reset email"
+      message: "Failed to send reset email: " + (error.message || "Unknown error")
     });
-
   }
 
 };
