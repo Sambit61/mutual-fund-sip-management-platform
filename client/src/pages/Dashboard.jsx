@@ -112,7 +112,7 @@ function Dashboard() {
       <div className="bg-[var(--color-card-bg)] border border-gray-800 rounded-xl p-4 md:p-6 mb-8 shadow-lg relative">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
           <div className="flex gap-2 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 whitespace-nowrap custom-scrollbar">
-            {["AAPL", "MSFT", "TSLA", "AMZN", "GOOGL", "NVDA"].map((symbol) => (
+            {Array.from(new Set(["AAPL", "MSFT", "TSLA", "AMZN", "GOOGL", "NVDA", selectedStock])).map((symbol) => (
               <button
                 key={symbol}
                 onClick={() => {
@@ -143,12 +143,11 @@ function Dashboard() {
 
         <div className="flex justify-between items-start static lg:absolute z-10 w-full lg:pr-12 mb-4 lg:mb-0">
           <div>
-            <h3 className="text-lg font-semibold text-white">Apple Inc. (AAPL)</h3>
-            <p className="text-xs text-gray-400">NasdaqGS • Real-time Data</p>
+            <h3 className="text-lg font-semibold text-white">{selectedStock}</h3>
+            <p className="text-xs text-gray-400">Real-time Data</p>
           </div>
           <div className="text-right">
-            <h3 className="text-xl font-bold text-white">$189.43</h3>
-            <p className="text-sm text-brand font-medium">+1.24 (0.66%)</p>
+            {/* Price fetches could be added here later */}
           </div>
         </div>
 

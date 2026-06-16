@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/api";
 
 import InvestModal from "../components/InvestModal";
@@ -12,6 +13,8 @@ import {
 } from "lucide-react";
 
 function Funds() {
+
+  const navigate = useNavigate();
 
   const [funds, setFunds] = useState([]);
   const [stocks, setStocks] = useState([]);
@@ -282,7 +285,7 @@ function Funds() {
                       stock.symbol
                     );
 
-                    window.location.href = "/";
+                    navigate("/dashboard");
                   }}
                   className="flex-1 bg-[var(--color-card-bg-light)] text-white py-2 rounded-lg font-semibold hover:bg-gray-600 transition"
                 >

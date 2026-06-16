@@ -73,11 +73,13 @@ function Login() {
                 Password
               </label>
               <span
-                onClick={() => toast("Forgot password feature coming soon")}
+               onClick={() =>
+               navigate("/forgot-password")
+                }
                 className="text-sm font-medium text-[var(--color-brand)] cursor-pointer hover:underline"
-              >
-                Forgot password?
-              </span>
+                >
+                  Forgot password?
+                </span>
             </div>
             <div className="relative">
               <input

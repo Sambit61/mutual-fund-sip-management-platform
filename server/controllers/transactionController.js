@@ -1,6 +1,8 @@
 const Transaction = require("../models/Transaction");
 const MutualFund = require("../models/MutualFund");
 const axios = require("axios");
+const YahooFinance = require('yahoo-finance2').default;
+const yahooFinance = new YahooFinance();
 
 
 // ================= BUY =================
@@ -25,12 +27,12 @@ exports.buyAsset = async (req, res) => {
 
     // 🔹 STOCK
     if (assetType === "STOCK") {
-
-      const response = await axios.get(
-        `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${process.env.FINNHUB_API_KEY}`
-      );
-
-      price = response.data.c;
+      try {
+        const quote = await yahooFinance.quote(symbol);
+        price = quote.regularMarketPrice;
+      } catch (err) {
+        console.error("Yahoo Finance error in buyAsset:", err);
+      }
 
       if (!price) {
         return res.status(400).json({ message: "Invalid stock price" });
@@ -184,11 +186,8 @@ exports.getPortfolio = async (req, res) => {
       if (item.isStock) {
 
         try {
-          const response = await axios.get(
-            `https://finnhub.io/api/v1/quote?symbol=${item.name}&token=${process.env.FINNHUB_API_KEY}`
-          );
-
-          const price = response.data.c || 0;
+          const quote = await yahooFinance.quote(item.name);
+          const price = quote.regularMarketPrice || 0;
           item.currentValue = item.totalUnits * price;
 
         } catch (err) {

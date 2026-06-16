@@ -72,7 +72,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://mfsip.vercel.app"
+      process.env.CLIENT_URL
     ],
     methods: [
       "GET",
