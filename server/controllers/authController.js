@@ -2,26 +2,12 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  requireTLS: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+const resend = new Resend(
+  process.env.RESEND_API_KEY
+);
 
-transporter.verify(function (error, success) {
-  if (error) {
-    console.log("SMTP ERROR:", error);
-  } else {
-    console.log("SMTP READY");
-  }
-});
 
 exports.registerUser = async (req, res) => {
   try {
@@ -131,34 +117,44 @@ exports.forgotPassword = async (req, res) => {
     const resetUrl =
       `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
-    await transporter.sendMail({
 
-      from:
-        process.env.EMAIL_USER,
+      console.log(
+        "Sending reset email to:",
+        user.email
+      );
 
-      to:
-        user.email,
+      await resend.emails.send({
 
-      subject:
-        "MutualSIP Password Reset",
+        from:
+          "onboarding@resend.dev",
+      
+        to:
+          user.email,
+      
+        subject:
+          "MutualSIP Password Reset",
+      
+        html: `
+          <h2>Password Reset Request</h2>
+      
+          <p>
+            Click below to reset your password:
+          </p>
+      
+          <a href="${resetUrl}">
+            Reset Password
+          </a>
+      
+          <p>
+            This link expires in 15 minutes.
+          </p>
+        `
+      
+      });
 
-      html: `
-        <h2>Password Reset Request</h2>
-
-        <p>
-          Click the link below to reset your password:
-        </p>
-
-        <a href="${resetUrl}">
-          Reset Password
-        </a>
-
-        <p>
-          This link expires in 15 minutes.
-        </p>
-      `
-
-    });
+      console.log(
+        "Email sent successfully"
+      );
 
     res.json({
       message:
