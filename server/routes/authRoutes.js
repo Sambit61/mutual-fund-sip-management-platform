@@ -4,8 +4,24 @@ const {
   registerUser,
   loginUser,
   forgotPassword,
-  resetPassword
-} = require("../controllers/authController");
+  resetPassword,
+  getCurrentUser,
+  changePassword,
+  uploadProfilePicture
+} = require(
+  "../controllers/authController"
+);
+
+const upload =
+  require(
+    "../middleware/uploadMiddleware"
+  );
+
+const {
+  protect
+} = require(
+  "../middleware/authMiddleware"
+);
 
 const router = express.Router();
 
@@ -29,4 +45,22 @@ router.post(
   resetPassword
 );
 
+router.get(
+  "/me",
+  protect,
+  getCurrentUser
+);
+
+router.put(
+  "/change-password",
+  protect,
+  changePassword
+);
+
+router.post(
+  "/upload-profile-picture",
+  protect,
+  upload.single("image"),
+  uploadProfilePicture
+);
 module.exports = router;

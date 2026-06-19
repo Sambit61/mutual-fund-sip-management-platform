@@ -30,10 +30,10 @@ function Login() {
         password,
       });
 //AUTHCONTEXT 
-      login(
-        res.data.token,
-        res.data.role
-      );
+login(
+  res.data.token,
+  res.data.user
+);
       
       navigate("/dashboard");
 

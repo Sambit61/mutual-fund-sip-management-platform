@@ -71,9 +71,16 @@ exports.loginUser = async (req, res) => {
     res.json({
       message: "Login successful",
       token,
-      role: user.role
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+        profilePicture: user.profilePicture
+      }
     });
-
+    
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json({ message: "Server error: " + (error.message || "Unknown error") });
@@ -219,5 +226,133 @@ exports.resetPassword = async (req, res) => {
     });
 
   }
+
+};
+
+exports.getCurrentUser = async (
+  req,
+  res
+) => {
+
+  try {
+
+    const user =
+      await User.findById(
+        req.user._id
+      ).select("-password");
+
+    res.json(user);
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      message:
+        "Server Error"
+    });
+
+  }
+
+};
+
+exports.changePassword = async (
+  req,
+  res
+) => {
+
+  try {
+
+    const {
+      currentPassword,
+      newPassword
+    } = req.body;
+
+    const user =
+      await User.findById(
+        req.user._id
+      );
+
+    const isMatch =
+      await bcrypt.compare(
+        currentPassword,
+        user.password
+      );
+
+    if (!isMatch) {
+
+      return res.status(400).json({
+        message:
+          "Current password is incorrect"
+      });
+
+    }
+
+    user.password =
+      await bcrypt.hash(
+        newPassword,
+        10
+      );
+
+    await user.save();
+
+    res.json({
+      message:
+        "Password updated successfully"
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      message:
+        "Server error"
+    });
+
+  }
+
+};
+
+exports.uploadProfilePicture =
+  async (req, res) => {
+
+    try {
+
+      const user =
+        await User.findById(
+          req.user._id
+        );
+
+      user.profilePicture =
+        req.file.path;
+
+      await user.save();
+
+      res.json({
+        message:
+          "Profile picture uploaded",
+
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          createdAt: user.createdAt,
+          profilePicture:
+            user.profilePicture
+        }
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      res.status(500).json({
+        message:
+          "Upload failed"
+      });
+
+    }
 
 };

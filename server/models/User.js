@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema(
       enum: ["investor", "admin"],
       default: "investor"
     },
+    
+    profilePicture: {
+      type: String,
+      default: ""
+    },
 
     resetPasswordToken: {
       type: String

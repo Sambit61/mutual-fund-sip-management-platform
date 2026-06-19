@@ -19,6 +19,8 @@ import ForgotPassword from "./pages/ForgotPassword";
  
 import ResetPassword from "./pages/ResetPassword";
 
+import Profile from "./pages/Profile";
+
 function App() {
   return (
     <div>
@@ -75,6 +77,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Transactions />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />

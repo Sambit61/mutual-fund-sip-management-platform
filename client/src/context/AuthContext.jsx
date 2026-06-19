@@ -26,16 +26,23 @@ export function AuthProvider({
     const storedToken =
       localStorage.getItem("token");
 
-    const storedRole =
-      localStorage.getItem("role");
+    const storedUser =
+      localStorage.getItem("user");
 
-    if (storedToken) {
+    if (
+      storedToken &&
+      storedUser
+    ) {
 
-      setToken(storedToken);
+      setToken(
+        storedToken
+      );
 
-      setUser({
-        role: storedRole
-      });
+      setUser(
+        JSON.parse(
+          storedUser
+        )
+      );
 
     }
 
@@ -45,7 +52,7 @@ export function AuthProvider({
 
   const login = (
     newToken,
-    role
+    userData
   ) => {
 
     localStorage.setItem(
@@ -54,15 +61,36 @@ export function AuthProvider({
     );
 
     localStorage.setItem(
-      "role",
-      role
+      "user",
+      JSON.stringify(
+        userData
+      )
     );
 
-    setToken(newToken);
+    setToken(
+      newToken
+    );
 
-    setUser({
-      role
-    });
+    setUser(
+      userData
+    );
+
+  };
+
+  const updateUser = (
+    updatedUser
+  ) => {
+
+    localStorage.setItem(
+      "user",
+      JSON.stringify(
+        updatedUser
+      )
+    );
+
+    setUser(
+      updatedUser
+    );
 
   };
 
@@ -73,7 +101,7 @@ export function AuthProvider({
     );
 
     localStorage.removeItem(
-      "role"
+      "user"
     );
 
     setToken(null);
@@ -90,7 +118,8 @@ export function AuthProvider({
         user,
         loading,
         login,
-        logout
+        logout,
+        updateUser
       }}
     >
 

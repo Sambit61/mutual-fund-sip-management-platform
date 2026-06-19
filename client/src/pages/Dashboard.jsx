@@ -48,6 +48,7 @@ function Dashboard() {
     const storedStock = localStorage.getItem("selectedStock");
     if (storedStock) setSelectedStock(storedStock);
   }, []);
+  const { user } = useAuth();
 
   const totalInvestment = portfolio.reduce((sum, item) => sum + item.totalInvestment, 0);
   const totalValue = portfolio.reduce((sum, item) => sum + item.currentValue, 0);
@@ -70,10 +71,12 @@ function Dashboard() {
   return (
     <div className="p-8 min-h-screen text-white max-w-7xl mx-auto">
       
+      
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
         <div>
-          <h1 className="text-4xl font-bold mb-2">Welcome back, Adrian</h1>
+        <h1 className="text-4xl font-bold mb-2">
+         Welcome back, {user?.name || "Investor"}</h1>                 
           <p className="text-xs text-gray-400 font-medium tracking-wider">PORTFOLIO PERFORMANCE • LAST UPDATED 2 MINS AGO</p>
         </div>
         <div className="flex gap-4">

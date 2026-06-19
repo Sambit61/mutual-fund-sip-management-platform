@@ -134,12 +134,14 @@ function Navbar() {
         ) : (
 
           <div className="flex flex-wrap justify-center gap-4 md:gap-6 items-center text-gray-400">
-
-            <button
-              className="hover:text-white transition-colors"
-            >
-              Profile
-            </button>
+<button
+  onClick={() =>
+    navigate("/profile")
+  }
+  className="hover:text-white transition-colors"
+>
+  {user?.name || "Profile"}
+</button>
 
             <button
               onClick={handleLogout}
