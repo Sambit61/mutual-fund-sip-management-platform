@@ -11,6 +11,8 @@ function Dashboard() {
   const [selectedStock, setSelectedStock] = useState("AAPL");
   const [loading, setLoading] = useState(true);
   const { token } = useAuth();
+  const [downloading, setDownloading] =
+  useState(false);
 
   useEffect(() => {
     const fetchPortfolio = async () => {
@@ -66,7 +68,83 @@ function Dashboard() {
       </div>
     );
   }
-  
+  const handleDownloadReport =
+  async () => {
+
+    try {
+
+      setDownloading(true);
+
+      const response =
+        await fetch(
+          `${import.meta.env.VITE_API_URL}/reports/portfolio-report`,
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`
+            }
+          }
+        );
+
+      if (!response.ok) {
+
+        throw new Error(
+          "Failed to download report"
+        );
+
+      }
+
+      const blob =
+        await response.blob();
+
+      const url =
+        window.URL.createObjectURL(
+          blob
+        );
+
+      const link =
+        document.createElement(
+          "a"
+        );
+
+      link.href = url;
+
+      link.download =
+        "portfolio-report.pdf";
+
+      document.body.appendChild(
+        link
+      );
+
+      link.click();
+
+      link.remove();
+
+      window.URL.revokeObjectURL(
+        url
+      );
+
+      toast.success(
+        "Portfolio report downloaded successfully"
+      );
+
+    } catch (error) {
+
+      console.error(
+        error
+      );
+
+      toast.error(
+        "Failed to download report"
+      );
+
+    } finally {
+
+      setDownloading(false);
+
+    }
+
+};
 
   return (
     <div className="p-8 min-h-screen text-white max-w-7xl mx-auto">
@@ -80,9 +158,19 @@ function Dashboard() {
           <p className="text-xs text-gray-400 font-medium tracking-wider">PORTFOLIO PERFORMANCE • LAST UPDATED 2 MINS AGO</p>
         </div>
         <div className="flex gap-4">
-          <button className="px-5 py-2 rounded font-semibold bg-[var(--color-card-bg-light)] text-gray-300 hover:text-white transition">
-            Download Report
-          </button>
+
+        <button
+  onClick={handleDownloadReport}
+  disabled={downloading}
+  className="px-5 py-2 rounded font-semibold bg-[var(--color-card-bg-light)] text-gray-300 hover:text-white transition disabled:opacity-50"
+>
+  {
+    downloading
+      ? "Downloading..."
+      : "Download Report"
+  }
+</button>
+
           <button className="px-5 py-2 rounded font-semibold bg-brand text-gray-900 hover:bg-brand-dark hover:text-white transition">
             Invest Now
           </button>

@@ -13,7 +13,10 @@ const connectDB = require("./config/db");
 
 const cors = require("cors");
 
-// ✅ ROUTES
+const reportRoutes =
+require("./routes/reportRoutes");
+
+// ROUTES
 
 const authRoutes =
   require("./routes/authRoutes");
@@ -39,20 +42,20 @@ const paymentRoutes =
 const adminRoutes =
   require("./routes/adminRoutes");
 
-// ✅ SERVICES
+// SERVICES
 
 const runSIPScheduler =
   require("./services/sipScheduler");
 
 dotenv.config();
 
-// ✅ CONNECT DATABASE
+// CONNECT DATABASE
 
 connectDB();
 
 const app = express();
 
-// ✅ REQUEST LOGGER
+// REQUEST LOGGER
 
 app.use((req, res, next) => {
 
@@ -66,7 +69,7 @@ app.use((req, res, next) => {
 
 });
 
-// ✅ CORS
+// CORS
 
 app.use(
   cors({
@@ -84,15 +87,15 @@ app.use(
   })
 );
 
-// ✅ BODY PARSER
+// BODY PARSER
 
 app.use(express.json());
 
-// ✅ SIP SCHEDULER
+// SIP SCHEDULER
 
 runSIPScheduler();
 
-// ✅ API ROUTES
+// API ROUTES
 
 app.use("/api/auth", authRoutes);
 
@@ -123,11 +126,16 @@ app.use("/api/market", marketRoutes);
 
 app.use("/api/payment", paymentRoutes);
 
-// ✅ ADMIN ROUTES
+app.use(
+  "/api/reports",
+  reportRoutes
+);
+
+// ADMIN ROUTES
 
 app.use("/api/admin", adminRoutes);
 
-// ✅ ROOT ROUTE
+// ROOT ROUTE
 
 app.get("/", (req, res) => {
 
@@ -137,7 +145,7 @@ app.get("/", (req, res) => {
 
 });
 
-// ✅ SERVER
+// SERVER
 
 const PORT =
   process.env.PORT || 5000;
