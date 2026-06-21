@@ -1,6 +1,6 @@
 import { useState } from "react";
-import ProfileSidebar from "../components/profile/profileSidebar";
-import PersonalDetails from "../components/profile/personalDetails";
+import ProfileSidebar from "../components/profile/ProfileSidebar";
+import PersonalDetails from "../components/profile/PersonalDetails";
 import EditProfile from "../components/profile/EditProfile";
 
 import Reports from "../components/profile/Reports";
@@ -24,12 +24,6 @@ function Profile() {
   const [loading, setLoading] = useState(false);
 
   const [activeTab, setActiveTab] = useState("Personal Details");
-
-  const handleLogout = () => {
-    logout();
-
-    navigate("/login");
-  };
   //handle for changing password
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
