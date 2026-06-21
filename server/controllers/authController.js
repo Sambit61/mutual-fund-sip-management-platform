@@ -4,10 +4,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { Resend } = require("resend");
 
-const resend = new Resend(
-  process.env.RESEND_API_KEY
-);
-
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 exports.registerUser = async (req, res) => {
   try {
@@ -24,17 +21,18 @@ exports.registerUser = async (req, res) => {
     const user = await User.create({
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
     });
 
     res.status(201).json({
       message: "User registered successfully",
-      user
+      user,
     });
-
   } catch (error) {
     console.error("Registration Error:", error);
-    res.status(500).json({ message: "Server error: " + (error.message || "Unknown error") });
+    res
+      .status(500)
+      .json({ message: "Server error: " + (error.message || "Unknown error") });
   }
 };
 
@@ -57,11 +55,11 @@ exports.loginUser = async (req, res) => {
     const token = jwt.sign(
       {
         id: user._id,
-        role: user.role
+        role: user.role,
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "1d"
+        expiresIn: "1d",
       }
     );
 
@@ -74,67 +72,51 @@ exports.loginUser = async (req, res) => {
         email: user.email,
         role: user.role,
         createdAt: user.createdAt,
-        profilePicture: user.profilePicture
-      }
+        profilePicture: user.profilePicture,
+      },
     });
-    
   } catch (error) {
     console.error("Login Error:", error);
-    res.status(500).json({ message: "Server error: " + (error.message || "Unknown error") });
+    res
+      .status(500)
+      .json({ message: "Server error: " + (error.message || "Unknown error") });
   }
 };
 
 exports.forgotPassword = async (req, res) => {
-
   try {
-
     const { email } = req.body;
 
     const user = await User.findOne({
-      email
+      email,
     });
 
     if (!user) {
-
       return res.status(404).json({
-        message: "User not found"
+        message: "User not found",
       });
-
     }
 
-    const resetToken =
-      crypto.randomBytes(32)
-      .toString("hex");
+    const resetToken = crypto.randomBytes(32).toString("hex");
 
-    user.resetPasswordToken =
-      resetToken;
+    user.resetPasswordToken = resetToken;
 
-    user.resetPasswordExpires =
-      Date.now() + 15 * 60 * 1000;
+    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
 
     await user.save();
 
-    const resetUrl =
-      `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
+    console.log("Sending reset email to:", user.email);
 
-      console.log(
-        "Sending reset email to:",
-        user.email
-      );
+    await resend.emails.send({
+      from: "onboarding@resend.dev",
 
-      await resend.emails.send({
+      to: user.email,
 
-        from:
-          "onboarding@resend.dev",
-      
-        to:
-          user.email,
-      
-        subject:
-          "MutualSIP Password Reset",
-      
-        html: `
+      subject: "MutualSIP Password Reset",
+
+      html: `
           <h2>Password Reset Request</h2>
       
           <p>
@@ -148,32 +130,25 @@ exports.forgotPassword = async (req, res) => {
           <p>
             This link expires in 15 minutes.
           </p>
-        `
-      
-      });
-
-      console.log(
-        "Email sent successfully"
-      );
-
-    res.json({
-      message:
-        "Password reset email sent"
+        `,
     });
 
+    console.log("Email sent successfully");
+
+    res.json({
+      message: "Password reset email sent",
+    });
   } catch (error) {
     console.error("Forgot Password Error:", error);
     res.status(500).json({
-      message: "Failed to send reset email: " + (error.message || "Unknown error")
+      message:
+        "Failed to send reset email: " + (error.message || "Unknown error"),
     });
   }
-
 };
 
 exports.resetPassword = async (req, res) => {
-
   try {
-
     const { token } = req.params;
 
     const { password } = req.body;
@@ -182,184 +157,150 @@ exports.resetPassword = async (req, res) => {
 
     // Make the token search case-insensitive just in case the client altered it
     const user = await User.findOne({
-      resetPasswordToken: new RegExp(`^${cleanToken}$`, "i")
+      resetPasswordToken: new RegExp(`^${cleanToken}$`, "i"),
     });
 
     if (!user) {
       return res.status(400).json({
-        message: "Token not found in database. It may be expired, already used, or invalid."
+        message:
+          "Token not found in database. It may be expired, already used, or invalid.",
       });
     }
 
-    if (
-      user.resetPasswordExpires <
-      new Date()
-    ) {
-
+    if (user.resetPasswordExpires < new Date()) {
       return res.status(400).json({
-        message: "Token expired"
+        message: "Token expired",
       });
-
     }
 
-    const hashedPassword =
-      await bcrypt.hash(
-        password,
-        10
-      );
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    user.password =
-      hashedPassword;
+    user.password = hashedPassword;
 
-    user.resetPasswordToken =
-      undefined;
+    user.resetPasswordToken = undefined;
 
-    user.resetPasswordExpires =
-      undefined;
+    user.resetPasswordExpires = undefined;
 
     await user.save();
 
     res.json({
-      message:
-        "Password reset successful"
+      message: "Password reset successful",
     });
-
   } catch (error) {
-
     console.error(error);
 
     res.status(500).json({
-      message: "Server error"
+      message: "Server error",
     });
-
   }
-
 };
 
-exports.getCurrentUser = async (
-  req,
-  res
-) => {
-
+exports.getCurrentUser = async (req, res) => {
   try {
-
-    const user =
-      await User.findById(
-        req.user._id
-      ).select("-password");
+    const user = await User.findById(req.user._id).select("-password");
 
     res.json(user);
-
   } catch (error) {
-
     console.error(error);
 
     res.status(500).json({
-      message:
-        "Server Error"
+      message: "Server Error",
     });
-
   }
-
 };
 
-exports.changePassword = async (
-  req,
-  res
-) => {
-
+exports.changePassword = async (req, res) => {
   try {
+    const { currentPassword, newPassword } = req.body;
 
-    const {
-      currentPassword,
-      newPassword
-    } = req.body;
+    const user = await User.findById(req.user._id);
 
-    const user =
-      await User.findById(
-        req.user._id
-      );
-
-    const isMatch =
-      await bcrypt.compare(
-        currentPassword,
-        user.password
-      );
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
 
     if (!isMatch) {
-
       return res.status(400).json({
-        message:
-          "Current password is incorrect"
+        message: "Current password is incorrect",
       });
-
     }
 
-    user.password =
-      await bcrypt.hash(
-        newPassword,
-        10
-      );
+    user.password = await bcrypt.hash(newPassword, 10);
 
     await user.save();
 
     res.json({
-      message:
-        "Password updated successfully"
+      message: "Password updated successfully",
     });
-
   } catch (error) {
-
     console.error(error);
 
     res.status(500).json({
-      message:
-        "Server error"
+      message: "Server error",
     });
-
   }
-
 };
 
-exports.uploadProfilePicture =
-  async (req, res) => {
+exports.uploadProfilePicture = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
 
-    try {
+    user.profilePicture = req.file.path;
 
-      const user =
-        await User.findById(
-          req.user._id
-        );
+    await user.save();
 
-      user.profilePicture =
-        req.file.path;
+    res.json({
+      message: "Profile picture uploaded",
 
-      await user.save();
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+        profilePicture: user.profilePicture,
+      },
+    });
+  } catch (error) {
+    console.error(error);
 
-      res.json({
-        message:
-          "Profile picture uploaded",
+    res.status(500).json({
+      message: "Upload failed",
+    });
+  }
+};
 
-        user: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          createdAt: user.createdAt,
-          profilePicture:
-            user.profilePicture
-        }
+exports.updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
       });
-
-    } catch (error) {
-
-      console.error(error);
-
-      res.status(500).json({
-        message:
-          "Upload failed"
-      });
-
     }
 
+    user.name = req.body.name || user.name;
+
+    user.email = req.body.email || user.email;
+
+    await user.save();
+
+    res.json({
+      message: "Profile updated successfully",
+
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+        profilePicture: user.profilePicture,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: "Failed to update profile",
+    });
+  }
 };

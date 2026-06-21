@@ -7,7 +7,8 @@ const {
   resetPassword,
   getCurrentUser,
   changePassword,
-  uploadProfilePicture
+  uploadProfilePicture,
+  updateProfile
 } = require(
   "../controllers/authController"
 );
@@ -55,6 +56,12 @@ router.put(
   "/change-password",
   protect,
   changePassword
+);
+
+router.put(
+  "/update-profile",
+  protect,
+  updateProfile
 );
 
 router.post(
