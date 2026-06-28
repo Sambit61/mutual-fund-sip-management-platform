@@ -25,22 +25,37 @@ function Navbar() {
       path: "/dashboard",
       label: "Home"
     },
-
+  
     {
       path: "/funds",
       label: "Funds"
     },
 
     {
-      path: "/portfolio",
-      label: "Portfolio"
+      path: "/stocks",
+      label: "Stocks"
     },
 
     {
+      path: "/watchlist",
+      label: "Watchlist"
+    },
+  
+    {
+      path: "/portfolio",
+      label: "Portfolio"
+    },
+  
+    {
       path: "/transactions",
       label: "Transactions"
+    },
+  
+    {
+      path: "/sip-calculator",
+      label: "SIP Calculator"
     }
-
+  
   ];
 
   return (

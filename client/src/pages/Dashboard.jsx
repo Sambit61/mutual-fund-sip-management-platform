@@ -3,48 +3,87 @@ import toast from "react-hot-toast";
 import api from "../api/api";
 import SummaryCard from "../components/SummaryCard";
 import StockChart from "../components/StockChart";
-import { Wallet, BarChart3, TrendingUp, Newspaper, PieChart, Rocket } from "lucide-react";
+import {
+  Wallet,
+  BarChart3,
+  TrendingUp,
+  Newspaper,
+  PieChart,
+  Rocket,
+} from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 function Dashboard() {
   const [portfolio, setPortfolio] = useState([]);
-  const [selectedStock, setSelectedStock] = useState("AAPL");
-  const [loading, setLoading] = useState(true);
-  const { token } = useAuth();
-  const [downloading, setDownloading] =
-  useState(false);
 
+  const [indices, setIndices] = useState([]);
+
+  const [selectedStock, setSelectedStock] = useState("AAPL");
+
+  const [loading, setLoading] = useState(true);
+
+  const { token } = useAuth();
+
+  const [downloading, setDownloading] = useState(false);
+
+  const [news, setNews] = useState([]);
+
+  //portfolio
   useEffect(() => {
     const fetchPortfolio = async () => {
       try {
         setLoading(true);
-  
-        const res = await api.get(
-          "/transactions/portfolio",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-  
+
+        const res = await api.get("/transactions/portfolio", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         setPortfolio(res.data);
-  
       } catch (err) {
         console.error(err);
-  
-        toast.error(
-          "Failed to load portfolio"
-        );
-  
+
+        toast.error("Failed to load portfolio");
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchPortfolio();
   }, [token]);
 
+  //indices
+  useEffect(() => {
+    const fetchIndices = async () => {
+      try {
+        const res = await api.get("/market/indices");
+
+        console.log("INDICES:", res.data);
+
+        setIndices(res.data);
+      } catch (err) {
+        console.error("Indices Error:", err);
+      }
+    };
+
+    fetchIndices();
+  }, []);
+
+  //news
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const res = await api.get("/market/news");
+
+        setNews(res.data.slice(0, 6));
+      } catch (err) {
+        console.error("News error:", err);
+      }
+    };
+
+    fetchNews();
+  }, []);
 
   useEffect(() => {
     const storedStock = localStorage.getItem("selectedStock");
@@ -52,128 +91,131 @@ function Dashboard() {
   }, []);
   const { user } = useAuth();
 
-  const totalInvestment = portfolio.reduce((sum, item) => sum + item.totalInvestment, 0);
-  const totalValue = portfolio.reduce((sum, item) => sum + item.currentValue, 0);
+  const totalInvestment = portfolio.reduce(
+    (sum, item) => sum + item.totalInvestment,
+    0
+  );
+  const totalValue = portfolio.reduce(
+    (sum, item) => sum + item.currentValue,
+    0
+  );
   const totalProfit = totalValue - totalInvestment;
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center text-white">
           <div className="w-12 h-12 border-4 border-gray-700 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-  
-          <p className="text-gray-400">
-            Loading portfolio...
-          </p>
+
+          <p className="text-gray-400">Loading portfolio...</p>
         </div>
       </div>
     );
   }
-  const handleDownloadReport =
-  async () => {
-
+  const handleDownloadReport = async () => {
     try {
-
       setDownloading(true);
 
-      const response =
-        await fetch(
-          `${import.meta.env.VITE_API_URL}/reports/portfolio-report`,
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`
-            }
-          }
-        );
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/reports/portfolio-report`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
-
-        throw new Error(
-          "Failed to download report"
-        );
-
+        throw new Error("Failed to download report");
       }
 
-      const blob =
-        await response.blob();
+      const blob = await response.blob();
 
-      const url =
-        window.URL.createObjectURL(
-          blob
-        );
+      const url = window.URL.createObjectURL(blob);
 
-      const link =
-        document.createElement(
-          "a"
-        );
+      const link = document.createElement("a");
 
       link.href = url;
 
-      link.download =
-        "portfolio-report.pdf";
+      link.download = "portfolio-report.pdf";
 
-      document.body.appendChild(
-        link
-      );
+      document.body.appendChild(link);
 
       link.click();
 
       link.remove();
 
-      window.URL.revokeObjectURL(
-        url
-      );
+      window.URL.revokeObjectURL(url);
 
-      toast.success(
-        "Portfolio report downloaded successfully"
-      );
-
+      toast.success("Portfolio report downloaded successfully");
     } catch (error) {
+      console.error(error);
 
-      console.error(
-        error
-      );
-
-      toast.error(
-        "Failed to download report"
-      );
-
+      toast.error("Failed to download report");
     } finally {
-
       setDownloading(false);
-
     }
-
-};
+  };
 
   return (
     <div className="p-8 min-h-screen text-white max-w-7xl mx-auto">
-      
-      
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
         <div>
-        <h1 className="text-4xl font-bold mb-2">
-         Welcome back, {user?.name || "Investor"}</h1>                 
-          <p className="text-xs text-gray-400 font-medium tracking-wider">PORTFOLIO PERFORMANCE • LAST UPDATED 2 MINS AGO</p>
+          <h1 className="text-4xl font-bold mb-2">
+            Welcome back, {user?.name || "Investor"}
+          </h1>
+          <p className="text-xs text-gray-400 font-medium tracking-wider">
+            PORTFOLIO PERFORMANCE • LAST UPDATED 2 MINS AGO
+          </p>
         </div>
         <div className="flex gap-4">
-
-        <button
-  onClick={handleDownloadReport}
-  disabled={downloading}
-  className="px-5 py-2 rounded font-semibold bg-[var(--color-card-bg-light)] text-gray-300 hover:text-white transition disabled:opacity-50"
->
-  {
-    downloading
-      ? "Downloading..."
-      : "Download Report"
-  }
-</button>
+          <button
+            onClick={handleDownloadReport}
+            disabled={downloading}
+            className="px-5 py-2 rounded font-semibold bg-[var(--color-card-bg-light)] text-gray-300 hover:text-white transition disabled:opacity-50"
+          >
+            {downloading ? "Downloading..." : "Download Report"}
+          </button>
 
           <button className="px-5 py-2 rounded font-semibold bg-brand text-gray-900 hover:bg-brand-dark hover:text-white transition">
             Invest Now
           </button>
+        </div>
+      </div>
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold mb-6">Global Markets</h2>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {indices.map((index) => {
+            const isPositive = index.percent >= 0;
+
+            return (
+              <div
+                key={index.symbol}
+                className="
+            bg-[var(--color-card-bg)]
+            border border-gray-800
+            rounded-xl
+            p-5
+          "
+              >
+                <h3 className="text-sm text-gray-400">{index.name}</h3>
+
+                <p className="text-2xl font-bold mt-2">{index.price}</p>
+
+                <p
+                  className={
+                    isPositive
+                      ? "text-green-400 font-semibold"
+                      : "text-red-400 font-semibold"
+                  }
+                >
+                  {isPositive ? "+" : ""}
+                  {index.percent?.toFixed(2)}%
+                </p>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -181,20 +223,45 @@ function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <SummaryCard
           title="Total Investment"
-          value={`$${totalInvestment > 0 ? totalInvestment.toLocaleString(undefined, {minimumFractionDigits: 2}) : '128,450.00'}`}
+          value={`$${
+            totalInvestment > 0
+              ? totalInvestment.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })
+              : "128,450.00"
+          }`}
           subtext="+12% from last quarter"
           icon={Wallet}
         />
         <SummaryCard
           title="Current Value"
-          value={`$${totalValue > 0 ? totalValue.toLocaleString(undefined, {minimumFractionDigits: 2}) : '142,912.44'}`}
+          value={`$${
+            totalValue > 0
+              ? totalValue.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })
+              : "142,912.44"
+          }`}
           subtext="Refined market valuation"
           icon={BarChart3}
         />
         <SummaryCard
           title="Profit/Loss"
-          value={`+$${totalProfit > 0 ? totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2}) : '14,462.44'}`}
-          subtext={<><span className="text-brand bg-brand/10 px-1.5 py-0.5 rounded mr-1">+11.26%</span> All-time earnings</>}
+          value={`+$${
+            totalProfit > 0
+              ? totalProfit.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })
+              : "14,462.44"
+          }`}
+          subtext={
+            <>
+              <span className="text-brand bg-brand/10 px-1.5 py-0.5 rounded mr-1">
+                +11.26%
+              </span>{" "}
+              All-time earnings
+            </>
+          }
           icon={TrendingUp}
         />
       </div>
@@ -203,7 +270,17 @@ function Dashboard() {
       <div className="bg-[var(--color-card-bg)] border border-gray-800 rounded-xl p-4 md:p-6 mb-8 shadow-lg relative">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
           <div className="flex gap-2 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 whitespace-nowrap custom-scrollbar">
-            {Array.from(new Set(["AAPL", "MSFT", "TSLA", "AMZN", "GOOGL", "NVDA", selectedStock])).map((symbol) => (
+            {Array.from(
+              new Set([
+                "AAPL",
+                "MSFT",
+                "TSLA",
+                "AMZN",
+                "GOOGL",
+                "NVDA",
+                selectedStock,
+              ])
+            ).map((symbol) => (
               <button
                 key={symbol}
                 onClick={() => {
@@ -223,7 +300,9 @@ function Dashboard() {
           <div className="flex items-center gap-4 text-xs font-medium">
             <span className="text-gray-500 tracking-wider">TIMEFRAME</span>
             <div className="flex gap-3 text-gray-400">
-              <button className="bg-[var(--color-card-bg-light)] text-white px-2 py-0.5 rounded">1D</button>
+              <button className="bg-[var(--color-card-bg-light)] text-white px-2 py-0.5 rounded">
+                1D
+              </button>
               <button className="hover:text-white">1W</button>
               <button className="hover:text-white">1M</button>
               <button className="hover:text-white">1Y</button>
@@ -234,7 +313,9 @@ function Dashboard() {
 
         <div className="flex justify-between items-start static lg:absolute z-10 w-full lg:pr-12 mb-4 lg:mb-0">
           <div>
-            <h3 className="text-lg font-semibold text-white">{selectedStock}</h3>
+            <h3 className="text-lg font-semibold text-white">
+              {selectedStock}
+            </h3>
             <p className="text-xs text-gray-400">Real-time Data</p>
           </div>
           <div className="text-right">
@@ -247,28 +328,96 @@ function Dashboard() {
         </div>
       </div>
 
+      <div className="mt-10">
+        <h2 className="text-2xl font-bold mb-6">Latest Market News</h2>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {news.map((article, index) => (
+            <div
+              key={index}
+              className="
+          bg-[var(--color-card-bg)]
+          border border-gray-800
+          rounded-xl
+          overflow-hidden
+          hover:border-brand
+          transition
+        "
+            >
+              {article.thumbnail?.resolutions?.[0]?.url && (
+                <img
+                  src={article.thumbnail.resolutions[0].url}
+                  alt={article.title}
+                  className="
+              w-full
+              h-48
+              object-cover
+            "
+                />
+              )}
+
+              <div className="p-5">
+                <h3 className="font-bold text-lg mb-3 line-clamp-2">
+                  {article.title}
+                </h3>
+
+                <p className="text-gray-400 text-sm mb-4">
+                  {article.publisher}
+                </p>
+
+                <a
+                  href={article.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="
+              text-brand
+              font-semibold
+              hover:underline
+            "
+                >
+                  Read More →
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Bottom Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
         {/* Market Intelligence */}
         <div className="bg-[var(--color-card-bg)] border border-gray-800 rounded-xl p-6 shadow-lg">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-semibold text-white flex items-center gap-2">Market Intelligence</h3>
-            <button className="text-brand text-xs font-bold tracking-wider hover:text-brand-dark">VIEW ALL</button>
+            <h3 className="font-semibold text-white flex items-center gap-2">
+              Market Intelligence
+            </h3>
+            <button className="text-brand text-xs font-bold tracking-wider hover:text-brand-dark">
+              VIEW ALL
+            </button>
           </div>
           <div className="space-y-5">
             <div className="flex gap-4 items-center">
               <div className="w-12 h-12 rounded bg-gradient-to-br from-blue-900 to-emerald-900 flex-shrink-0"></div>
               <div>
-                <p className="text-[10px] text-brand font-bold mb-1 tracking-wider">FINTECH TODAY</p>
-                <p className="text-sm font-medium leading-tight">Digital transformation in mutual funds sees 40% growth in Asian markets.</p>
+                <p className="text-[10px] text-brand font-bold mb-1 tracking-wider">
+                  FINTECH TODAY
+                </p>
+                <p className="text-sm font-medium leading-tight">
+                  Digital transformation in mutual funds sees 40% growth in
+                  Asian markets.
+                </p>
               </div>
             </div>
             <div className="flex gap-4 items-center">
               <div className="w-12 h-12 rounded bg-gradient-to-br from-purple-900 to-rose-900 flex-shrink-0"></div>
               <div>
-                <p className="text-[10px] text-gray-400 font-bold mb-1 tracking-wider">WEALTH MANAGEMENT</p>
-                <p className="text-sm font-medium leading-tight text-gray-300">New regulations for algorithmic SIP contributions announced for 2025.</p>
+                <p className="text-[10px] text-gray-400 font-bold mb-1 tracking-wider">
+                  WEALTH MANAGEMENT
+                </p>
+                <p className="text-sm font-medium leading-tight text-gray-300">
+                  New regulations for algorithmic SIP contributions announced
+                  for 2025.
+                </p>
               </div>
             </div>
           </div>
@@ -284,7 +433,10 @@ function Dashboard() {
                 <span className="text-white font-medium">65%</span>
               </div>
               <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
-                <div className="h-full bg-brand rounded-full" style={{ width: '65%' }}></div>
+                <div
+                  className="h-full bg-brand rounded-full"
+                  style={{ width: "65%" }}
+                ></div>
               </div>
             </div>
             <div>
@@ -293,7 +445,10 @@ function Dashboard() {
                 <span className="text-white font-medium">25%</span>
               </div>
               <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 rounded-full" style={{ width: '25%' }}></div>
+                <div
+                  className="h-full bg-blue-500 rounded-full"
+                  style={{ width: "25%" }}
+                ></div>
               </div>
             </div>
             <div>
@@ -302,7 +457,10 @@ function Dashboard() {
                 <span className="text-white font-medium">10%</span>
               </div>
               <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
-                <div className="h-full bg-rose-400 rounded-full" style={{ width: '10%' }}></div>
+                <div
+                  className="h-full bg-rose-400 rounded-full"
+                  style={{ width: "10%" }}
+                ></div>
               </div>
             </div>
           </div>
@@ -310,7 +468,11 @@ function Dashboard() {
 
         {/* Smart SIP CTA */}
         <div className="bg-brand rounded-xl p-6 shadow-lg text-gray-900 relative overflow-hidden">
-          <h3 className="text-xl font-bold mb-3">Ready for Smart<br/>SIP?</h3>
+          <h3 className="text-xl font-bold mb-3">
+            Ready for Smart
+            <br />
+            SIP?
+          </h3>
           <p className="text-sm font-medium opacity-80 mb-6 max-w-[80%]">
             Automate your wealth creation with our AI-driven insights.
           </p>
@@ -319,7 +481,6 @@ function Dashboard() {
           </button>
           <Rocket className="absolute -bottom-4 -right-4 w-24 h-24 text-black opacity-10" />
         </div>
-
       </div>
     </div>
   );

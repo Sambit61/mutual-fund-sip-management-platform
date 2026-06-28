@@ -1,9 +1,6 @@
 require("dotenv").config({ path: "./.env" });
 
-console.log(
-  "TEST ENV:",
-  process.env.FINNHUB_API_KEY
-);
+console.log("TEST ENV:", process.env.FINNHUB_API_KEY);
 
 const express = require("express");
 
@@ -13,39 +10,31 @@ const connectDB = require("./config/db");
 
 const cors = require("cors");
 
-const reportRoutes =
-require("./routes/reportRoutes");
+const reportRoutes = require("./routes/reportRoutes");
 
 // ROUTES
 
-const authRoutes =
-  require("./routes/authRoutes");
+const authRoutes = require("./routes/authRoutes");
 
-const testRoutes =
-  require("./routes/testRoutes");
+const testRoutes = require("./routes/testRoutes");
 
-const fundRoutes =
-  require("./routes/fundRoutes");
+const fundRoutes = require("./routes/fundRoutes");
 
-const transactionRoutes =
-  require("./routes/transactionRoutes");
+const transactionRoutes = require("./routes/transactionRoutes");
 
-const sipRoutes =
-  require("./routes/sipRoutes");
+const sipRoutes = require("./routes/sipRoutes");
 
-const marketRoutes =
-  require("./routes/marketRoutes");
+const marketRoutes = require("./routes/marketRoutes");
 
-const paymentRoutes =
-  require("./routes/paymentRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
-const adminRoutes =
-  require("./routes/adminRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+
+const watchlistRoutes = require("./routes/watchlistRoutes");
 
 // SERVICES
 
-const runSIPScheduler =
-  require("./services/sipScheduler");
+const runSIPScheduler = require("./services/sipScheduler");
 
 dotenv.config();
 
@@ -58,32 +47,18 @@ const app = express();
 // REQUEST LOGGER
 
 app.use((req, res, next) => {
-
-  console.log(
-    "INCOMING REQUEST:",
-    req.method,
-    req.url
-  );
+  console.log("INCOMING REQUEST:", req.method, req.url);
 
   next();
-
 });
 
 // CORS
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      process.env.CLIENT_URL
-    ],
-    methods: [
-      "GET",
-      "POST",
-      "PUT",
-      "DELETE"
-    ],
-    credentials: true
+    origin: ["http://localhost:5173", process.env.CLIENT_URL],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
   })
 );
 
@@ -104,21 +79,14 @@ app.use("/api/test", testRoutes);
 app.use(
   "/api/funds",
   (req, res, next) => {
-
-    console.log(
-      "/api/funds middleware hit"
-    );
+    console.log("/api/funds middleware hit");
 
     next();
-
   },
   fundRoutes
 );
 
-app.use(
-  "/api/transactions",
-  transactionRoutes
-);
+app.use("/api/transactions", transactionRoutes);
 
 app.use("/api/sip", sipRoutes);
 
@@ -126,10 +94,9 @@ app.use("/api/market", marketRoutes);
 
 app.use("/api/payment", paymentRoutes);
 
-app.use(
-  "/api/reports",
-  reportRoutes
-);
+app.use("/api/reports", reportRoutes);
+
+app.use("/api/watchlist", watchlistRoutes);
 
 // ADMIN ROUTES
 
@@ -138,22 +105,13 @@ app.use("/api/admin", adminRoutes);
 // ROOT ROUTE
 
 app.get("/", (req, res) => {
-
-  res.send(
-    "Mutual Fund SIP API running"
-  );
-
+  res.send("Mutual Fund SIP API running");
 });
 
 // SERVER
 
-const PORT =
-  process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-
-  console.log(
-    `Server running on port ${PORT}`
-  );
-
+  console.log(`Server running on port ${PORT}`);
 });

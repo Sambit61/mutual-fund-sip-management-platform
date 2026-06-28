@@ -16,10 +16,16 @@ import Transactions from "./pages/Transaction";
 import AdminDashboard from "./pages/AdminDashboard";
 
 import ForgotPassword from "./pages/ForgotPassword";
- 
+
 import ResetPassword from "./pages/ResetPassword";
 
 import Profile from "./pages/Profile";
+
+import SIPCalculator from "./pages/SIPCalculator";
+
+import Stocks from "./pages/Stocks";
+
+import Watchlist from "./pages/Watchlist";
 
 function App() {
   return (
@@ -34,14 +40,8 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/register" element={<Register />} />
-        <Route
-  path="/forgot-password"
-  element={<ForgotPassword />}
-/>
-<Route
-  path="/reset-password/:token"
-  element={<ResetPassword />}
-/>
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         {/* USER */}
 
@@ -62,6 +62,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/stocks" element={<Stocks />} />
 
         <Route
           path="/portfolio"
@@ -88,6 +90,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/sip-calculator" element={<SIPCalculator />} />
+
+        <Route path="/watchlist" element={<Watchlist />} />
 
         {/* ADMIN */}
 
