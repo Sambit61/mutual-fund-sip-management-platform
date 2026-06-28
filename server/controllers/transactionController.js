@@ -186,7 +186,11 @@ exports.getPortfolio = async (req, res) => {
       if (item.isStock) {
 
         try {
-          const quote = await yahooFinance.quote(item.name);
+          // Use Promise.race to prevent hanging in production if Yahoo Finance blocks the request
+          const quote = await Promise.race([
+            yahooFinance.quote(item.name),
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Yahoo Finance Timeout")), 5000))
+          ]);
           const price = quote.regularMarketPrice || 0;
           item.currentValue = item.totalUnits * price;
 

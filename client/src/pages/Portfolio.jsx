@@ -43,7 +43,7 @@ function Portfolio() {
             Authorization: `Bearer ${token}`
           }
         });
-        setPortfolio(res.data || []);
+        setPortfolio(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error(err);
       }
@@ -56,7 +56,7 @@ function Portfolio() {
             Authorization: `Bearer ${token}`
           }
         });
-        setTransactions(res.data || []);
+        setTransactions(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error(err);
       }
