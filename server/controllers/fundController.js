@@ -1,6 +1,6 @@
 const MutualFund = require("../models/MutualFund");
 const axios = require("axios");
-// ✅ CREATE FUND
+// CREATE FUND
 
 exports.createFund = async (req, res) => {
 
@@ -22,7 +22,7 @@ exports.createFund = async (req, res) => {
 
 };
 
-// ✅ GET ALL FUNDS
+// GET ALL FUNDS
 
 exports.getFunds = async (req, res) => {
 
@@ -52,7 +52,7 @@ exports.getFunds = async (req, res) => {
 
 };
 
-// ✅ DELETE FUND
+// DELETE FUND
 
 exports.deleteFund = async (req, res) => {
 
@@ -88,7 +88,7 @@ exports.deleteFund = async (req, res) => {
 
 };
 
-// ✅ UPDATE FUND
+// UPDATE FUND
 
 exports.updateFund = async (req, res) => {
 
@@ -136,6 +136,8 @@ exports.updateFund = async (req, res) => {
   }
 
 };
+
+//syncfund
 exports.syncFundNav = async (req, res) => {
 
   try {
@@ -192,4 +194,66 @@ exports.syncFundNav = async (req, res) => {
 
   }
 
+};
+//syncall
+exports.syncAllFundNavs = async (req, res) => {
+  try {
+
+    const funds =
+      await MutualFund.find({
+        amfiCode: {
+          $exists: true,
+          $ne: null
+        }
+      });
+
+    let updatedCount = 0;
+
+    for (const fund of funds) {
+
+      try {
+
+        const response =
+          await axios.get(
+            `https://api.mfapi.in/mf/${fund.amfiCode}`
+          );
+
+        const latestData =
+          response.data.data[0];
+
+        fund.nav =
+          Number(latestData.nav);
+
+        fund.lastUpdated =
+          new Date();
+
+        await fund.save();
+
+        updatedCount++;
+
+      } catch (err) {
+
+        console.error(
+          `Failed for ${fund.fundName}:`,
+          err.message
+        );
+
+      }
+    }
+
+    res.json({
+      message:
+        `${updatedCount} funds synced successfully`
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      message:
+        "Failed to sync all NAVs"
+    });
+
+  }
 };

@@ -5,7 +5,8 @@ const {
   getFunds,
   deleteFund,
   updateFund,
-  syncFundNav
+  syncFundNav,
+  syncAllFundNavs
 } = require("../controllers/fundController");
 
 const {
