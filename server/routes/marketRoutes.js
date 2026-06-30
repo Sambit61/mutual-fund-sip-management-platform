@@ -116,89 +116,33 @@ res.json(stocks);
 
 //indices
 router.get("/indices", async (req, res) => {
-  if (
-    indicesCache &&
-    Date.now() - indicesCacheTime < CACHE_DURATION
-  ) {
-    console.log("Returning cached indices");
-  
-    return res.json(indicesCache);
-  }
-  try {
-    const indices = [
-      {
-        yahoo: "^NSEI",
-        finnhub: "NIFTY",
-        name: "NIFTY 50",
-      },
-      {
-        yahoo: "^BSESN",
-        finnhub: "SENSEX",
-        name: "SENSEX",
-      },
-      {
-        yahoo: "^IXIC",
-        finnhub: "IXIC",
-        name: "NASDAQ",
-      },
-      {
-        yahoo: "^GSPC",
-        finnhub: "SPX",
-        name: "S&P 500",
-      },
-      {
-        yahoo: "^DJI",
-        finnhub: "DJI",
-        name: "Dow Jones",
-      },
-    ];
-
-    const data = [];
-
-    for (const index of indices) {
-      try {
-    
-        if (isProduction) {
-    
-          const response = await axios.get(
-            `https://finnhub.io/api/v1/quote?symbol=${index.finnhub}&token=${process.env.FINNHUB_API_KEY}`
-          );
-    
-          data.push({
-            symbol: index.name,
-            name: index.name,
-            price: response.data.c,
-            percent: response.data.dp,
-          });
-    
-        } else {
-    
-          const quote = await yahooFinance.quote(index.yahoo);
-    
-          data.push({
-            symbol: index.yahoo,
-            name: quote.shortName,
-            price: quote.regularMarketPrice,
-            percent: quote.regularMarketChangePercent,
-          });
-    
-        }
-    
-      } catch (err) {
-        console.error(index.name, err.message);
-      }
-    }
-
-    indicesCache = data;
-    indicesCacheTime = Date.now();
-    
-    console.log("Indices response:", data);
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({
-      message: "Error fetching indices",
-    });
-  }
+  res.json([
+    {
+      symbol: "NIFTY 50",
+      price: 25431.25,
+      percent: 0.84,
+    },
+    {
+      symbol: "SENSEX",
+      price: 83412.67,
+      percent: 0.72,
+    },
+    {
+      symbol: "NASDAQ",
+      price: 22756.18,
+      percent: 1.12,
+    },
+    {
+      symbol: "S&P 500",
+      price: 6198.45,
+      percent: 0.91,
+    },
+    {
+      symbol: "DOW JONES",
+      price: 43825.32,
+      percent: 0.58,
+    },
+  ]);
 });
 
 // HISTORY (YAHOO FINANCE)
