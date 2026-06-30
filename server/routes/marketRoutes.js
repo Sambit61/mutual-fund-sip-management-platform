@@ -118,27 +118,32 @@ res.json(stocks);
 router.get("/indices", async (req, res) => {
   res.json([
     {
-      symbol: "NIFTY 50",
+      symbol: "NIFTY",
+      name: "NIFTY 50",
       price: 25431.25,
       percent: 0.84,
     },
     {
       symbol: "SENSEX",
+      name: "SENSEX",
       price: 83412.67,
       percent: 0.72,
     },
     {
       symbol: "NASDAQ",
+      name: "NASDAQ",
       price: 22756.18,
       percent: 1.12,
     },
     {
-      symbol: "S&P 500",
+      symbol: "SP500",
+      name: "S&P 500",
       price: 6198.45,
       percent: 0.91,
     },
     {
-      symbol: "DOW JONES",
+      symbol: "DJI",
+      name: "Dow Jones",
       price: 43825.32,
       percent: 0.58,
     },
