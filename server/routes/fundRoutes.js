@@ -6,7 +6,10 @@ const {
   deleteFund,
   updateFund,
   syncFundNav,
-  syncAllFundNavs
+  syncAllFundNavs,
+  searchFunds,
+  importFund,
+  getTopFunds
 } = require("../controllers/fundController");
 
 const {
@@ -17,6 +20,17 @@ const adminMiddleware = require("../middleware/adminMiddleware");
 
 const router = express.Router();
 
+router.get(
+  "/search",
+  protect,
+  adminMiddleware,
+  searchFunds
+);
+
+router.get(
+  "/top-funds",
+  getTopFunds
+);
 // ✅ CREATE FUND
 
 router.post(
@@ -54,11 +68,27 @@ router.get(
   },
   getFunds
 );
+
 router.post(
   "/sync/:id",
   protect,
   adminMiddleware,
   syncFundNav
 );
+router.post(
+  "/sync-all",
+  protect,
+  adminMiddleware,
+  syncAllFundNavs
+);
+
+//import
+router.post(
+  "/import",
+  protect,
+  adminMiddleware,
+  importFund
+);
+
 
 module.exports = router;

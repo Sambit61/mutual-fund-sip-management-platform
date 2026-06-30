@@ -11,7 +11,7 @@ import {
   CategoryScale,
   LinearScale,
   PointElement,
-  LineElement
+  LineElement,
 } from "chart.js";
 
 import { Pie, Line } from "react-chartjs-2";
@@ -27,21 +27,18 @@ ChartJS.register(
 );
 
 function Portfolio() {
-
   const [portfolio, setPortfolio] = useState([]);
   const [transactions, setTransactions] = useState([]);
 
   const { token } = useAuth();
-  console.log("TOKEN:", token);
 
   useEffect(() => {
-
     const fetchPortfolio = async () => {
       try {
         const res = await api.get("/transactions/portfolio", {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
         setPortfolio(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
@@ -53,8 +50,8 @@ function Portfolio() {
       try {
         const res = await api.get("/transactions/my", {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
         setTransactions(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
@@ -64,7 +61,6 @@ function Portfolio() {
 
     fetchPortfolio();
     fetchTransactions();
-
   }, [token]);
 
   // 🔹 SAFE TOTALS
@@ -82,21 +78,21 @@ function Portfolio() {
 
   // 🔹 PIE CHART
   const pieChartData = {
-    labels: portfolio.map(item => item.name || "Unknown"),
+    labels: portfolio.map((item) => item.name || "Unknown"),
     datasets: [
       {
         label: "Investment Distribution",
-        data: portfolio.map(item => item.totalInvestment || 0),
+        data: portfolio.map((item) => item.totalInvestment || 0),
         backgroundColor: [
           "#4CAF50",
           "#2196F3",
           "#FF9800",
           "#9C27B0",
           "#E91E63",
-          "#009688"
-        ]
-      }
-    ]
+          "#009688",
+        ],
+      },
+    ],
   };
 
   // 🔹 LINE CHART (Growth)
@@ -107,22 +103,22 @@ function Portfolio() {
   let cumulative = 0;
 
   const lineChartData = {
-    labels: sortedTransactions.map(t =>
+    labels: sortedTransactions.map((t) =>
       new Date(t.createdAt).toLocaleDateString()
     ),
     datasets: [
       {
         label: "Portfolio Growth",
-        data: sortedTransactions.map(t => {
-          cumulative += (t.amount || 0);
+        data: sortedTransactions.map((t) => {
+          cumulative += t.amount || 0;
           return cumulative;
         }),
         borderColor: "#4CAF50",
         backgroundColor: "rgba(76,175,80,0.2)",
         tension: 0.3,
-        fill: true
-      }
-    ]
+        fill: true,
+      },
+    ],
   };
 
   // 🔹 LOADING / EMPTY STATE
@@ -131,14 +127,13 @@ function Portfolio() {
   }
 
   return (
-
     <div className="p-4 md:p-8 max-w-7xl mx-auto text-white">
-
-      <h2 className="text-2xl md:text-3xl font-bold mb-6">Portfolio Dashboard</h2>
+      <h2 className="text-2xl md:text-3xl font-bold mb-6">
+        Portfolio Dashboard
+      </h2>
 
       {/* SUMMARY */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-
         <SummaryCard
           title="Total Investment"
           value={`₹${totalInvestment.toFixed(2)}`}
@@ -153,13 +148,14 @@ function Portfolio() {
           title="Profit / Loss"
           value={`₹${totalProfit.toFixed(2)}`}
         />
-
       </div>
 
       {/* PIE CHART */}
       {portfolio.length > 0 && (
         <div className="w-full max-w-md mx-auto md:mx-0 mb-8 bg-[var(--color-card-bg)] p-4 rounded-xl border border-gray-800 shadow-lg">
-          <h3 className="text-lg font-semibold mb-4 text-center md:text-left">Investment Distribution</h3>
+          <h3 className="text-lg font-semibold mb-4 text-center md:text-left">
+            Investment Distribution
+          </h3>
           <Pie data={pieChartData} />
         </div>
       )}
@@ -167,7 +163,9 @@ function Portfolio() {
       {/* LINE CHART */}
       {transactions.length > 0 && (
         <div className="w-full max-w-3xl mx-auto md:mx-0 mb-8 bg-[var(--color-card-bg)] p-4 rounded-xl border border-gray-800 shadow-lg">
-          <h3 className="text-lg font-semibold mb-4 text-center md:text-left">Portfolio Growth</h3>
+          <h3 className="text-lg font-semibold mb-4 text-center md:text-left">
+            Portfolio Growth
+          </h3>
           <Line data={lineChartData} />
         </div>
       )}
@@ -180,38 +178,51 @@ function Portfolio() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {portfolio.map((item, index) => (
-
             <div
               key={index}
               className="bg-[var(--color-card-bg)] border border-gray-800 p-5 rounded-xl shadow-lg hover:border-gray-600 transition"
             >
-
               <h4 className="text-lg font-bold mb-3">{item.name}</h4>
 
               <div className="space-y-2 text-sm">
-                <p className="flex justify-between text-gray-300"><span>Total Units:</span> <span className="font-medium text-white">{(item.totalUnits || 0).toFixed(2)}</span></p>
+                <p className="flex justify-between text-gray-300">
+                  <span>Total Units:</span>{" "}
+                  <span className="font-medium text-white">
+                    {(item.totalUnits || 0).toFixed(2)}
+                  </span>
+                </p>
 
-                <p className="flex justify-between text-gray-300"><span>Total Investment:</span> <span className="font-medium text-white">₹{(item.totalInvestment || 0).toFixed(2)}</span></p>
+                <p className="flex justify-between text-gray-300">
+                  <span>Total Investment:</span>{" "}
+                  <span className="font-medium text-white">
+                    ₹{(item.totalInvestment || 0).toFixed(2)}
+                  </span>
+                </p>
 
-                <p className="flex justify-between text-gray-300"><span>Current Value:</span> <span className="font-medium text-white">₹{(item.currentValue || 0).toFixed(2)}</span></p>
+                <p className="flex justify-between text-gray-300">
+                  <span>Current Value:</span>{" "}
+                  <span className="font-medium text-white">
+                    ₹{(item.currentValue || 0).toFixed(2)}
+                  </span>
+                </p>
 
-                <p className="flex justify-between pt-2 border-t border-gray-700 font-bold" style={{
-                  color: item.profitLoss >= 0 ? "var(--color-brand)" : "#f87171"
-                }}>
-                  <span>Profit/Loss:</span> <span>₹{(item.profitLoss || 0).toFixed(2)}</span>
+                <p
+                  className="flex justify-between pt-2 border-t border-gray-700 font-bold"
+                  style={{
+                    color:
+                      item.profitLoss >= 0 ? "var(--color-brand)" : "#f87171",
+                  }}
+                >
+                  <span>Profit/Loss:</span>{" "}
+                  <span>₹{(item.profitLoss || 0).toFixed(2)}</span>
                 </p>
               </div>
-
             </div>
-
           ))}
         </div>
       )}
-
     </div>
-
   );
-
 }
 
 export default Portfolio;

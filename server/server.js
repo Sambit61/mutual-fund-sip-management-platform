@@ -10,7 +10,7 @@ const connectDB = require("./config/db");
 
 const cors = require("cors");
 
-const reportRoutes = require("./routes/reportRoutes");
+const startNAVScheduler = require("./services/navScheduler");
 
 // ROUTES
 
@@ -25,6 +25,8 @@ const transactionRoutes = require("./routes/transactionRoutes");
 const sipRoutes = require("./routes/sipRoutes");
 
 const marketRoutes = require("./routes/marketRoutes");
+
+const reportRoutes = require("./routes/reportRoutes");
 
 const paymentRoutes = require("./routes/paymentRoutes");
 
@@ -69,6 +71,10 @@ app.use(express.json());
 // SIP SCHEDULER
 
 runSIPScheduler();
+
+//NAV SCHEDULER
+
+startNAVScheduler();
 
 // API ROUTES
 
