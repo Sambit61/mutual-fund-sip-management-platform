@@ -137,17 +137,31 @@ router.get("/indices", async (req, res) => {
 
     for (const symbol of indices) {
       try {
-        const quote = await yahooFinance.quote(symbol);
+        if (isProduction) {
 
-        data.push({
-          symbol,
-
-          name: quote.shortName,
-
-          price: quote.regularMarketPrice,
-
-          percent: quote.regularMarketChangePercent,
-        });
+          const response = await axios.get(
+            `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${process.env.FINNHUB_API_KEY}`
+          );
+        
+          data.push({
+            symbol,
+            name: symbol,
+            price: response.data.c,
+            percent: response.data.dp,
+          });
+        
+        } else {
+        
+          const quote = await yahooFinance.quote(symbol);
+        
+          data.push({
+            symbol,
+            name: quote.shortName,
+            price: quote.regularMarketPrice,
+            percent: quote.regularMarketChangePercent,
+          });
+        
+        }
       } catch (err) {
         console.error(symbol, err.message);
       }
