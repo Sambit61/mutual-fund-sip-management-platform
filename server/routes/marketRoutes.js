@@ -5,9 +5,26 @@ const yahooFinance = new YahooFinance();
 
 const router = express.Router();
 
+let stocksCache = null;
+let stocksCacheTime = 0;
+
+let indicesCache = null;
+let indicesCacheTime = 0;
+
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 //STOCKS (YAHOO FINANCE)
 router.get("/stocks", async (req, res) => {
   console.log("MARKET STOCKS HIT");
+
+  if (
+    stocksCache &&
+    Date.now() - stocksCacheTime < CACHE_DURATION
+  ) {
+    console.log("Returning cached stocks");
+  
+    return res.json(stocksCache);
+  }
 
   try {
     const symbols = [
@@ -72,7 +89,10 @@ router.get("/stocks", async (req, res) => {
       }
     }
 
-    res.json(stocks);
+   stocksCache = stocks;
+stocksCacheTime = Date.now();
+
+res.json(stocks);
   } catch (error) {
     console.error("Main error:", error.message);
 
@@ -84,6 +104,14 @@ router.get("/stocks", async (req, res) => {
 
 //indices
 router.get("/indices", async (req, res) => {
+  if (
+    indicesCache &&
+    Date.now() - indicesCacheTime < CACHE_DURATION
+  ) {
+    console.log("Returning cached indices");
+  
+    return res.json(indicesCache);
+  }
   try {
     const indices = [
       "^NSEI", // NIFTY 50
@@ -113,6 +141,9 @@ router.get("/indices", async (req, res) => {
       }
     }
 
+    indicesCache = data;
+    indicesCacheTime = Date.now();
+    
     res.json(data);
   } catch (err) {
     res.status(500).json({
