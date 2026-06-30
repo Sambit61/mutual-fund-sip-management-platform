@@ -126,50 +126,73 @@ router.get("/indices", async (req, res) => {
   }
   try {
     const indices = [
-      "^NSEI", // NIFTY 50
-      "^BSESN", // SENSEX
-      "^IXIC", // NASDAQ
-      "^GSPC", // S&P 500
-      "^DJI", // Dow Jones
+      {
+        yahoo: "^NSEI",
+        finnhub: "NIFTY",
+        name: "NIFTY 50",
+      },
+      {
+        yahoo: "^BSESN",
+        finnhub: "SENSEX",
+        name: "SENSEX",
+      },
+      {
+        yahoo: "^IXIC",
+        finnhub: "IXIC",
+        name: "NASDAQ",
+      },
+      {
+        yahoo: "^GSPC",
+        finnhub: "SPX",
+        name: "S&P 500",
+      },
+      {
+        yahoo: "^DJI",
+        finnhub: "DJI",
+        name: "Dow Jones",
+      },
     ];
 
     const data = [];
 
-    for (const symbol of indices) {
+    for (const index of indices) {
       try {
+    
         if (isProduction) {
-
+    
           const response = await axios.get(
-            `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${process.env.FINNHUB_API_KEY}`
+            `https://finnhub.io/api/v1/quote?symbol=${index.finnhub}&token=${process.env.FINNHUB_API_KEY}`
           );
-        
+    
           data.push({
-            symbol,
-            name: symbol,
+            symbol: index.name,
+            name: index.name,
             price: response.data.c,
             percent: response.data.dp,
           });
-        
+    
         } else {
-        
-          const quote = await yahooFinance.quote(symbol);
-        
+    
+          const quote = await yahooFinance.quote(index.yahoo);
+    
           data.push({
-            symbol,
+            symbol: index.yahoo,
             name: quote.shortName,
             price: quote.regularMarketPrice,
             percent: quote.regularMarketChangePercent,
           });
-        
+    
         }
+    
       } catch (err) {
-        console.error(symbol, err.message);
+        console.error(index.name, err.message);
       }
     }
 
     indicesCache = data;
     indicesCacheTime = Date.now();
     
+    console.log("Indices response:", data);
     res.json(data);
   } catch (err) {
     res.status(500).json({
