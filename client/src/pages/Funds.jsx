@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import api from "../api/api";
 
 import InvestModal from "../components/InvestModal";
 import StockInvestModal from "../components/StockInvestModal";
+import FundDetailsModal from "../components/FundDetailsModal";
 
 import { Search, Filter, TrendingUp, DollarSign } from "lucide-react";
 
 function Funds() {
-
   const [funds, setFunds] = useState([]);
 
-
   const [selectedFund, setSelectedFund] = useState(null);
+
+  const [detailsFund, setDetailsFund] = useState(null);
 
   const [topFunds, setTopFunds] = useState({
     gainers: [],
@@ -131,68 +131,49 @@ function Funds() {
         </div>
       </div>
 
-
       <div className="grid md:grid-cols-2 gap-6 mb-10">
+        {/* TOP GAINERS */}
 
-{/* TOP GAINERS */}
+        <div className="bg-[var(--color-card-bg)] p-6 rounded-xl border border-gray-800">
+          <h2 className="text-xl font-bold text-green-400 mb-4">
+            Top Mutual Fund Gainers
+          </h2>
 
-<div className="bg-[var(--color-card-bg)] p-6 rounded-xl border border-gray-800">
+          {topFunds.gainers.map((fund) => (
+            <div
+              key={fund.name}
+              className="flex justify-between py-3 border-b border-gray-800"
+            >
+              <span className="truncate mr-4">{fund.name}</span>
 
-  <h2 className="text-xl font-bold text-green-400 mb-4">
-    Top Mutual Fund Gainers
-  </h2>
+              <span className="text-green-400 font-bold">
+                +{(fund.changePercent || 0).toFixed(2)}%
+              </span>
+            </div>
+          ))}
+        </div>
 
-  {topFunds.gainers.map((fund) => (
+        {/* TOP LOSERS */}
 
-    <div
-      key={fund.name}
-      className="flex justify-between py-3 border-b border-gray-800"
-    >
+        <div className="bg-card-bg p-6 rounded-xl border border-gray-800">
+          <h2 className="text-xl font-bold text-red-400 mb-4">
+            Top Mutual Fund Losers
+          </h2>
 
-      <span className="truncate mr-4">
-        {fund.name}
-      </span>
+          {topFunds.losers.map((fund) => (
+            <div
+              key={fund.name}
+              className="flex justify-between py-3 border-b border-gray-800"
+            >
+              <span className="truncate mr-4">{fund.name}</span>
 
-      <span className="text-green-400 font-bold">
-      +{(fund.changePercent || 0).toFixed(2)}%
-      </span>
-
-    </div>
-
-  ))}
-
-</div>
-
-{/* TOP LOSERS */}
-
-<div className="bg-card-bg p-6 rounded-xl border border-gray-800">
-
-  <h2 className="text-xl font-bold text-red-400 mb-4">
-    Top Mutual Fund Losers
-  </h2>
-
-  {topFunds.losers.map((fund) => (
-
-    <div
-      key={fund.name}
-      className="flex justify-between py-3 border-b border-gray-800"
-    >
-
-      <span className="truncate mr-4">
-        {fund.name}
-      </span>
-
-      <span className="text-red-400 font-bold">
-      {(fund.changePercent || 0).toFixed(2)}%
-      </span>
-
-    </div>
-
-  ))}
-
-</div>
-
-</div>
+              <span className="text-red-400 font-bold">
+                {(fund.changePercent || 0).toFixed(2)}%
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
       {/* MUTUAL FUNDS */}
 
       <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
@@ -220,12 +201,21 @@ function Funds() {
               <p className="text-3xl font-bold text-white mb-6">₹{fund.nav}</p>
             </div>
 
-            <button
-              onClick={() => setSelectedFund(fund)}
-              className="w-full bg-card-bg-light text-white py-3 rounded-lg font-bold hover:bg-brand hover:text-gray-900 transition"
-            >
-              Invest in Fund
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setSelectedFund(fund)}
+                className="flex-1 bg-card-bg-light text-white py-3 rounded-lg font-bold hover:bg-brand hover:text-gray-900 transition"
+              >
+                Invest
+              </button>
+
+              <button
+                onClick={() => setDetailsFund(fund)}
+                className="flex-1 bg-blue-500 text-white py-3 rounded-lg font-bold hover:bg-blue-600 transition"
+              >
+                Details
+              </button>
+            </div>
           </div>
         ))}
       </div>
@@ -240,6 +230,13 @@ function Funds() {
           closeModal={() => setSelectedFund(null)}
         />
       )}
+
+{detailsFund && (
+  <FundDetailsModal
+    fund={detailsFund}
+    closeModal={() => setDetailsFund(null)}
+  />
+)}
 
       {/* STOCK MODAL */}
 

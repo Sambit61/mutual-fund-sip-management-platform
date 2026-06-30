@@ -447,3 +447,38 @@ exports.getTopFunds = async (req, res) => {
 
   }
 };
+
+//get fund history
+exports.getFundHistory = async (req, res) => {
+  try {
+
+    const { amfiCode } = req.params;
+
+    const response = await axios.get(
+      `https://api.mfapi.in/mf/${amfiCode}`
+    );
+
+    const history =
+      response.data.data.map(
+        (item) => ({
+          date: item.date,
+          nav: Number(item.nav)
+        })
+      );
+
+    res.json(history);
+
+  } catch (error) {
+
+    console.error(
+      "FUND HISTORY ERROR:",
+      error.message
+    );
+
+    res.status(500).json({
+      message:
+        "Failed to fetch fund history"
+    });
+
+  }
+};

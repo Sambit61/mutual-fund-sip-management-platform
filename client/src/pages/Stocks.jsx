@@ -34,17 +34,19 @@ function Stocks() {
   const [sectorFilter, setSectorFilter] = useState("All");
 
   const [visibleStocks, setVisibleStocks] = useState(12);
-
   useEffect(() => {
     const fetchStocks = async () => {
       try {
         const res = await api.get("/market/stocks");
-
+  
+        console.log("Stocks API response:", res.data);
+  
         setStocks(res.data);
       } catch (err) {
-        console.error(err);
+        console.error("Stocks fetch error:", err);
       }
     };
+  
     fetchStocks();
   }, []);
 

@@ -9,7 +9,8 @@ const {
   syncAllFundNavs,
   searchFunds,
   importFund,
-  getTopFunds
+  getTopFunds,
+  getFundHistory
 } = require("../controllers/fundController");
 
 const {
@@ -31,6 +32,12 @@ router.get(
   "/top-funds",
   getTopFunds
 );
+
+router.get(
+  "/history/:amfiCode",
+  getFundHistory
+);
+
 // ✅ CREATE FUND
 
 router.post(

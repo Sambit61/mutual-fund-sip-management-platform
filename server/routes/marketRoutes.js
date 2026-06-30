@@ -59,7 +59,7 @@ router.get("/stocks", async (req, res) => {
       try {
         const quote = await yahooFinance.quote(symbol);
 
-        const summary = await yahooFinance.quoteSummary(symbol, {
+       const summary = await yahooFinance.quoteSummary(symbol, {
           modules: ["assetProfile"],
         });
 
@@ -78,7 +78,7 @@ router.get("/stocks", async (req, res) => {
 
           high52Week: quote.fiftyTwoWeekHigh,
 
-          low52Week: quote.fiftyTwoWeekLow,
+         low52Week: quote.fiftyTwoWeekLow,
 
           companyName: quote.longName,
 
