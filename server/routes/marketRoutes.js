@@ -2,6 +2,8 @@ const express = require("express");
 const axios = require("axios");
 const YahooFinance = require("yahoo-finance2").default;
 const yahooFinance = new YahooFinance();
+const isProduction =
+  process.env.NODE_ENV === "production";
 
 const router = express.Router();
 
@@ -57,38 +59,48 @@ router.get("/stocks", async (req, res) => {
 
     for (let symbol of symbols) {
       try {
-        const quote = await yahooFinance.quote(symbol);
-
-       const summary = await yahooFinance.quoteSummary(symbol, {
-          modules: ["assetProfile"],
-        });
-
+    
+        let quote;
+    
+        if (isProduction) {
+          const response = await axios.get(
+            `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${process.env.FINNHUB_API_KEY}`
+          );
+    
+          quote = {
+            regularMarketPrice: response.data.c,
+            regularMarketChange: response.data.d,
+            regularMarketChangePercent: response.data.dp,
+            marketCap: null,
+            trailingPE: null,
+            fiftyTwoWeekHigh: null,
+            fiftyTwoWeekLow: null,
+            longName: symbol
+          };
+    
+        } else {
+    
+          quote = await yahooFinance.quote(symbol);
+    
+        }
+    
         stocks.push({
           symbol,
-
           price: quote.regularMarketPrice,
-
           change: quote.regularMarketChange,
-
           percent: quote.regularMarketChangePercent,
-
           marketCap: quote.marketCap,
-
           peRatio: quote.trailingPE,
-
           high52Week: quote.fiftyTwoWeekHigh,
-
-         low52Week: quote.fiftyTwoWeekLow,
-
+          low52Week: quote.fiftyTwoWeekLow,
           companyName: quote.longName,
-
-          sector: summary.assetProfile?.sector || "Unknown",
+          sector: "Unknown"
         });
+    
       } catch (err) {
         console.error(`Error for ${symbol}:`, err.message);
       }
     }
-
    stocksCache = stocks;
 stocksCacheTime = Date.now();
 
